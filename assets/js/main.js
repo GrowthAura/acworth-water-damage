@@ -13,11 +13,18 @@
           observer.unobserve(entry.target);
         }
       });
-    }, { threshold: 0.02 });
+    }, { threshold: 0 });
     revealEls.forEach(function (el) { observer.observe(el); });
   } else {
     revealEls.forEach(function (el) { el.classList.add('in'); });
   }
+  // Safety timer (defense in depth): no content wrapper should carry
+  // .reveal any more, but if one ever does, it must never stay hidden.
+  setTimeout(function () {
+    document.querySelectorAll('.reveal:not(.in)').forEach(function (el) {
+      el.classList.add('in');
+    });
+  }, 900);
 
   // Header gains a shadow once the page scrolls.
   var header = document.querySelector('.site-header');

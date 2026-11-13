@@ -26,7 +26,7 @@ $SITE = [
     'hours'       => '24/7',
     'map_query'   => 'Acworth, GA 30101',
     // GitHub Pages project URL (live). Swap when a real domain lands.
-    'url'         => 'https://growthaura.github.io/acworth-water-damage',
+    'url'         => 'https://www.acworthwaterdamagerestoration.us',
 ];
 
 $HOME_META = [

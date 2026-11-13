@@ -4,11 +4,17 @@
 // include; area pages skip the map.
 global $SITE, $SERVICES, $AREAS, $PAGES;
 $show_map = $show_map ?? true;
-// The lead form lives on the homepage + service pages only; elsewhere the
-// "Request Emergency Help" button goes to the homepage form.
+// The lead form lives on the homepage + service pages; the contact page
+// has its own message form. AZ P2-5: area, hub, about and resource pages
+// carry the lead form in their compact final CTA. Elsewhere the
+// "Request Emergency Help" button goes to the homepage form. On the
+// contact page the button reads "Send a Message" and targets that page's
+// own form.
 $__slug = $currentSlug ?? '/';
-$__hasForm = ($__slug === '/') || (isset($PAGES[$__slug]) && ($PAGES[$__slug]['type'] ?? '') === 'service');
+$__type = isset($PAGES[$__slug]) ? ($PAGES[$__slug]['type'] ?? '') : '';
+$__hasForm = ($__slug === '/') || in_array($__type, ['service', 'contact', 'area', 'area-hub', 'about', 'resource'], true);
 $__formTarget = $__hasForm ? '#request-service' : '/#request-service';
+$__formLabel = ($__slug === '/contact') ? 'Send a Message' : 'Request Emergency Help';
 $map_src = 'https://www.google.com/maps?q=' . rawurlencode($SITE['map_query']) . '&output=embed';
 ?>
 </main>
@@ -30,7 +36,7 @@ $map_src = 'https://www.google.com/maps?q=' . rawurlencode($SITE['map_query']) .
     <div class="footer-col">
       <p class="footer-h">Services</p>
       <ul>
-        <?php foreach ($SERVICES as $s): ?>
+        <?php foreach (nav_services() as $s): ?>
         <li><a href="<?= esc($s['slug']) ?>"><?= esc($s['nav']) ?></a></li>
         <?php endforeach; ?>
       </ul>
@@ -45,11 +51,20 @@ $map_src = 'https://www.google.com/maps?q=' . rawurlencode($SITE['map_query']) .
       </ul>
     </div>
     <div class="footer-col">
+      <p class="footer-h">Resources</p>
+      <ul>
+        <?php foreach (nav_resources() as $r): ?>
+        <li><a href="<?= esc($r['slug']) ?>"><?= esc($r['nav']) ?></a></li>
+        <?php endforeach; ?>
+      </ul>
+    </div>
+    <div class="footer-col">
       <p class="footer-h">Get Help Now</p>
       <p><a href="<?= esc($SITE['phone_href']) ?>"><?= esc($SITE['phone']) ?></a><br>
       Acworth, GA 30101 &amp; 30102<br>
       <span class="footer-hours">Open 24 hours, 7 days a week</span></p>
-      <a class="btn btn-cream" href="<?= esc($__formTarget) ?>">Request Emergency Help</a>
+      <a class="btn btn-cream" href="<?= esc($__formTarget) ?>"><?= esc($__formLabel) ?></a>
+      <p class="footer-about"><a href="/about">About our team</a> &middot; <a href="/contact">Contact us</a></p>
     </div>
   </div>
   <div class="container footer-bottom">
@@ -61,6 +76,6 @@ $map_src = 'https://www.google.com/maps?q=' . rawurlencode($SITE['map_query']) .
   <span aria-hidden="true">&#9742;</span><span><?= esc($SITE['phone']) ?></span>
 </a>
 <div class="mobile-call-spacer" aria-hidden="true"></div>
-<script src="/assets/js/main.js?v=3" defer></script>
+<script src="/assets/js/main.js?v=4" defer></script>
 </body>
 </html>

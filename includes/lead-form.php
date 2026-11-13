@@ -29,7 +29,7 @@ $notice = $form['notice'] ?? false;
     <label for="f-service">What is happening?</label>
     <select id="f-service" name="service">
       <option value="">Select a service</option>
-      <?php foreach ($SERVICES as $s): ?>
+      <?php foreach (nav_services() as $s): ?>
       <option value="<?= esc($s['nav']) ?>"<?= (($values['service'] ?? '') === $s['nav']) ? ' selected' : '' ?>><?= esc($s['nav']) ?></option>
       <?php endforeach; ?>
       <option value="Other"<?= (($values['service'] ?? '') === 'Other') ? ' selected' : '' ?>>Other</option>

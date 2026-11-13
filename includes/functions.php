@@ -36,6 +36,244 @@ function linkify($text, $anchor, $href, $currentSlug = null) {
     return esc($before) . '<a href="' . esc($href) . '">' . esc($anchor) . '</a>' . esc($after);
 }
 
+// ---- Full-tab content (rebuild 2026-11-12): generic block renderer ------
+// $FULL_PAGES (data/pages-full.php) carries per-route structured blocks
+// parsed verbatim from the doc's 41 tabs. Homepage (Tab 1) stays in
+// data/pages.php and is untouched.
+
+// Apply several links to one paragraph's text. Each link carries its
+// anchor's character offset ("pos") in the ORIGINAL text, so the right
+// occurrence is linked when a phrase repeats. Self-links and overlapping
+// anchors are skipped (the parser already dedupes; this is the
+// render-time guard). Words stay verbatim; only the anchor spans link.
+function linkify_multi($text, $links, $currentSlug = null) {
+    if (empty($links)) return esc($text);
+    $spans = [];
+    foreach ($links as $l) {
+        if (empty($l['anchor']) || empty($l['href'])) continue;
+        if ($l['href'] === $currentSlug) continue;
+        $pos = $l['pos'] ?? mb_strpos($text, $l['anchor']);
+        if ($pos === false || $pos === null) continue;
+        if (mb_substr($text, (int) $pos, mb_strlen($l['anchor'])) !== $l['anchor']) continue;
+        $end = (int) $pos + mb_strlen($l['anchor']);
+        $overlap = false;
+        foreach ($spans as $s) {
+            if ($pos < $s['end'] && $end > $s['pos']) { $overlap = true; break; }
+        }
+        if ($overlap) continue;
+        $spans[] = ['pos' => (int) $pos, 'end' => $end, 'anchor' => $l['anchor'], 'href' => $l['href']];
+    }
+    if (!$spans) return esc($text);
+    usort($spans, fn($a, $b) => $a['pos'] <=> $b['pos']);
+    $out = '';
+    $cursor = 0;
+    foreach ($spans as $s) {
+        $out .= esc(mb_substr($text, $cursor, $s['pos'] - $cursor));
+        $out .= '<a href="' . esc($s['href']) . '">' . esc($s['anchor']) . '</a>';
+        $cursor = $s['end'];
+    }
+    $out .= esc(mb_substr($text, $cursor));
+    return $out;
+}
+
+function render_para_links($para, $currentSlug = null) {
+    if (is_string($para)) return '<p>' . esc($para) . '</p>';
+    $text = $para['text'] ?? '';
+    $links = $para['links'] ?? [];
+    return '<p>' . linkify_multi($text, $links, $currentSlug) . '</p>';
+}
+
+function render_faq_section($sec, $slug) {
+    $out = '<h2>' . esc($sec['h2']) . '</h2><div class="faq-list">';
+    foreach ($sec['items'] as $f) {
+        $out .= '<details><summary><h3>' . esc($f['q']) . '</h3><span class="faq-toggle" aria-hidden="true">+</span></summary>';
+        $out .= '<div class="faq-answer"><p>' . linkify_multi($f['a'], $f['links'] ?? [], $slug) . '</p></div></details>';
+    }
+    return $out . '</div>';
+}
+
+// AZ P2-3: split a "Label: rest" step bullet into [label, rest].
+// A label is a short prefix (<=6 words, <=45 chars) before the first ": ".
+// Items without one render as body-only steps (number badge only).
+function split_step_label($text) {
+    $pos = mb_strpos($text, ': ');
+    if ($pos === false) return [null, $text];
+    $label = mb_substr($text, 0, $pos);
+    if (count(preg_split('/\s+/', trim($label))) > 6 || mb_strlen($label) > 45) {
+        return [null, $text];
+    }
+    return [$label, mb_substr($text, $pos + 2)];
+}
+
+// AZ P2-3: the trailing item of a process group is a closing note, not a
+// step, when it has no label and reads as commentary (it carries a link,
+// or one of the closing phrases). Only ever applied to the LAST item.
+function is_process_note($text, $links) {
+    if (!empty($links)) return true;
+    return (bool) preg_match('/\bis only\b|\bis what\b|\bis complete only when\b|\btakes longer than\b/i', $text);
+}
+
+// AZ P2-3: render a "How does ..." group as numbered step cards
+// (no-photo variant: number badge + label + text). Step numbers come
+// from a CSS counter, so no new visible words are added. A trailing
+// closing note renders as a paragraph after the grid. Words and links
+// are unchanged; only the presentation changes.
+function render_process_steps($steps, $slug) {
+    $note = null;
+    $last = count($steps) - 1;
+    if ($last >= 0) {
+        $cand = $steps[$last];
+        if ($cand['label'] === null && is_process_note($cand['text'], $cand['links'])) {
+            $note = array_pop($steps);
+        }
+    }
+    $out = '<div class="process-steps">';
+    foreach ($steps as $s) {
+        $out .= '<div class="process-step">';
+        if ($s['label'] !== null) {
+            $out .= '<p class="step-title">' . esc($s['label']) . '</p>';
+        }
+        // Links carry offsets into the original text; shift them past
+        // the "Label: " prefix when a label was split off.
+        $links = $s['links'];
+        if ($s['label'] !== null && !empty($links)) {
+            $shift = mb_strlen($s['label']) + 2;
+            $links = array_map(function ($l) use ($shift) {
+                $l['pos'] = ($l['pos'] ?? 0) - $shift;
+                return $l;
+            }, $links);
+        }
+        $out .= '<p>' . linkify_multi($s['text'], $links, $slug) . '</p>';
+        $out .= '</div>';
+    }
+    $out .= '</div>';
+    if ($note !== null) {
+        $out .= '<p class="process-note">' . linkify_multi($note['text'], $note['links'], $slug) . '</p>';
+    }
+    return $out;
+}
+
+// Generic renderer for a tab's structured blocks. $formHtml is inserted
+// where a "contact_form" block appears (contact page only).
+function render_blocks($blocks, $slug, $formHtml = '') {
+    $out = '';
+    for ($i = 0; $i < count($blocks); $i++) {
+        $b = $blocks[$i];
+        switch ($b['kind']) {
+            case 'h2':
+                $out .= '<h2>' . esc($b['text']) . '</h2>';
+                // AZ P2-3: a "How does ..." group followed by bullets/defs
+                // is the service process — re-present it as step cards
+                // (words unchanged). The following list blocks are consumed.
+                if (str_starts_with($b['text'], 'How does')) {
+                    $steps = [];
+                    $j = $i + 1;
+                    while ($j < count($blocks) && in_array($blocks[$j]['kind'], ['bullets', 'defs'], true)) {
+                        $blk = $blocks[$j];
+                        if ($blk['kind'] === 'defs') {
+                            foreach ($blk['items'] as $it) {
+                                $steps[] = ['label' => $it['label'], 'text' => $it['text'], 'links' => $it['links'] ?? []];
+                            }
+                        } else {
+                            foreach ($blk['items'] as $it) {
+                                [$label, $rest] = split_step_label($it['text']);
+                                // Guard: a link anchored inside the label
+                                // part must not be shifted into the body.
+                                if ($label !== null && !empty($it['links'])) {
+                                    $shift = mb_strlen($label) + 2;
+                                    foreach ($it['links'] as $l) {
+                                        if (($l['pos'] ?? 0) < $shift) { $label = null; $rest = $it['text']; break; }
+                                    }
+                                }
+                                $steps[] = ['label' => $label, 'text' => $rest, 'links' => $it['links'] ?? []];
+                            }
+                        }
+                        $j++;
+                    }
+                    if ($steps) {
+                        $out .= render_process_steps($steps, $slug);
+                        $i = $j - 1;
+                    }
+                }
+                break;
+            case 'h3':
+                $out .= '<h3>' . esc($b['text']) . '</h3>';
+                break;
+            case 'para':
+                // AZ P2-4: /contact "Call for emergencies" number is bare
+                // doc text; render it as the same tel: link every other
+                // phone number uses. Words unchanged; only this exact
+                // paragraph is affected.
+                if (trim($b['text'] ?? '') === '(470) 672-2095' && empty($b['links'])) {
+                    $out .= '<p>' . phone_link('(470) 672-2095') . '</p>';
+                } else {
+                    $out .= render_para_links($b, $slug);
+                }
+                break;
+            case 'defs':
+                $out .= '<dl class="quick-list">';
+                foreach ($b['items'] as $d) {
+                    // AZ O-7: the doc's phone value renders as a tel: link,
+                    // same as the P2-4 paragraph fix. Words unchanged.
+                    $dd = (trim($d['text'] ?? '') === '(470) 672-2095' && empty($d['links']))
+                        ? phone_link('(470) 672-2095')
+                        : linkify_multi($d['text'], $d['links'] ?? [], $slug);
+                    $out .= '<div><dt>' . esc($d['label']) . '</dt><dd>' . $dd . '</dd></div>';
+                }
+                $out .= '</dl>';
+                break;
+            case 'bullets':
+                $out .= '<ul>';
+                foreach ($b['items'] as $it) {
+                    $out .= '<li>' . linkify_multi($it['text'], $it['links'] ?? [], $slug) . '</li>';
+                }
+                $out .= '</ul>';
+                break;
+            case 'table':
+                $out .= table_html(['headers' => $b['headers'], 'rows' => $b['rows']]);
+                break;
+            case 'faq_section':
+                $out .= render_faq_section($b, $slug);
+                break;
+            case 'contact_form':
+                $out .= $formHtml;
+                break;
+        }
+    }
+    return $out;
+}
+
+// Header/footer nav: the 19 original services + the 6 new service routes
+// from the full-tab rebuild, in doc order.
+function nav_services() {
+    global $SERVICES, $FULL_PAGES;
+    $out = [];
+    $seen = [];
+    foreach ($SERVICES as $s) {
+        $out[] = ['slug' => $s['slug'], 'nav' => $s['nav']];
+        $seen[$s['slug']] = true;
+    }
+    foreach ($FULL_PAGES as $slug => $f) {
+        if (($f['type'] ?? '') === 'service' && empty($seen[$slug])) {
+            $out[] = ['slug' => $slug, 'nav' => $f['nav']];
+            $seen[$slug] = true;
+        }
+    }
+    return $out;
+}
+
+// Footer Resources column: the 7 resource guides, in tab order.
+function nav_resources() {
+    global $FULL_PAGES;
+    $out = [];
+    foreach ($FULL_PAGES as $slug => $f) {
+        if (($f['type'] ?? '') === 'resource') {
+            $out[] = ['slug' => $slug, 'nav' => $f['h1']];
+        }
+    }
+    return $out;
+}
+
 // A paragraph array: ['text' => ..., 'anchor' => ..., 'href' => ...]
 // or a plain string paragraph.
 function render_para($para, $currentSlug = null) {
@@ -120,10 +358,13 @@ function table_html($table) {
 }
 
 // ---- Page map: every route the site serves -------------------------------
-// Skeleton pages reuse ONLY their doc-verbatim homepage summary as content.
-// No words are invented for them; their full guides await their own docs.
+// Full-tab rebuild 2026-11-12: the 26 original routes keep their shape
+// (service summaries still feed the homepage cards + nav), but every route
+// is overlaid with its verbatim tab data (meta, eyebrow, H1, intro,
+// blocks, FAQs) from data/pages-full.php, and the 15 missing routes are
+// added — 41 routes total. The homepage (Tab 1) is not in $FULL_PAGES.
 function build_pages() {
-    global $SERVICES, $AREAS;
+    global $SERVICES, $AREAS, $FULL_PAGES;
     $pages = [];
 
     foreach ($SERVICES as $c) {
@@ -145,6 +386,14 @@ function build_pages() {
         'h1' => 'Service Areas near Acworth, GA',
         'kind' => 'area-hub', 'parent' => null,
     ];
+    foreach ($FULL_PAGES as $slug => $full) {
+        if ($slug === '/') continue;
+        if (isset($pages[$slug])) {
+            $pages[$slug] = array_merge($pages[$slug], $full);
+        } else {
+            $pages[$slug] = array_merge(['parent' => null], $full);
+        }
+    }
     return $pages;
 }
 
@@ -167,8 +416,14 @@ function page_meta($slug, $pages) {
         return ['title' => $HOME_META['title'], 'description' => $HOME_META['description']];
     }
     $p = $pages[$slug];
-    // Titles are the H1 alone: every H1 is <=51 chars, so all titles fit <=60.
-    // (The old ' | Brand' suffix pushed all 25 inner titles to 62-86 chars.)
+    // Full-tab rebuild: meta title + description are verbatim from the tab.
+    // (Descriptions over 160 chars are trimmed at a sentence boundary by
+    // meta_desc() — no word is changed.)
+    if (!empty($p['meta_title'])) {
+        return ['title' => $p['meta_title'],
+                'description' => meta_desc($p['meta_description'] ?? '')];
+    }
+    // Fallback for any route without tab meta (none expected after rebuild).
     if ($p['type'] === 'service') {
         return ['title' => $p['h1'],
                 'description' => meta_desc($p['summary']['desc'] ?? $p['summary']['body'])];

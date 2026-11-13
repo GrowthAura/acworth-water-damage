@@ -28,17 +28,22 @@ global $SITE, $SERVICES, $AREAS;
 <?php endif; ?>
 <meta name="twitter:title" content="<?= esc($HEAD['title']) ?>">
 <meta name="twitter:description" content="<?= esc($HEAD['description']) ?>">
-<meta name="theme-color" content="#0F1D2E">
+<meta name="theme-color" content="#071527">
 <link rel="manifest" href="/site.webmanifest">
 <link rel="icon" href="/favicon.ico">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/css/styles.css?v=6">
+<!-- SEO FIX 2026-11-13 (P3-7): fonts self-hosted — Fraunces + Inter latin
+     variable woff2 in /assets/fonts/ (see @font-face in styles.css). The
+     Google Fonts stylesheet + preconnects were render-blocking and external;
+     they are removed. Only the two faces the CSS actually uses are shipped
+     (Fraunces normal 400-700, Inter 400-800); the italic axis Google served
+     is unused anywhere on the site, so no italic file is installed. -->
+<link rel="preload" href="/assets/fonts/fraunces-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/css/styles.css?v=14">
 <?= $HEAD['ld'] ?? '' ?>
 <noscript><style>.reveal{opacity:1 !important;transform:none !important;}</style></noscript>
 </head>
@@ -52,7 +57,7 @@ global $SITE, $SERVICES, $AREAS;
   </div>
   <div class="container header-row">
     <a class="brand" href="/" aria-label="Acworth Water Damage Restoration, home">
-      <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" width="24" height="24"><path d="M12 2.5C12 2.5 5.5 10.2 5.5 14.8a6.5 6.5 0 0 0 13 0C18.5 10.2 12 2.5 12 2.5Z" fill="#0B7AB5"/><path d="M9.2 15.2a2.8 2.8 0 0 0 2.3 2.7" fill="none" stroke="#FBF8F2" stroke-width="1.4" stroke-linecap="round"/></svg></span>
+      <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" width="24" height="24"><path d="M12 2.5C12 2.5 5.5 10.2 5.5 14.8a6.5 6.5 0 0 0 13 0C18.5 10.2 12 2.5 12 2.5Z" fill="#08699C"/><path d="M9.2 15.2a2.8 2.8 0 0 0 2.3 2.7" fill="none" stroke="#F6F0E2" stroke-width="1.4" stroke-linecap="round"/></svg></span>
       <span class="brand-word">Acworth<br>Water Damage<small><?= esc($SITE['brand_small']) ?></small></span>
     </a>
     <nav class="main-nav" aria-label="Main">
@@ -61,7 +66,7 @@ global $SITE, $SERVICES, $AREAS;
         <summary>Services</summary>
         <div class="nav-drop">
           <p class="drop-group">Water Damage Services</p>
-          <?php foreach ($SERVICES as $s): ?>
+          <?php foreach (nav_services() as $s): ?>
           <a href="<?= esc($s['slug']) ?>"><?= esc($s['nav']) ?></a>
           <?php endforeach; ?>
         </div>
@@ -76,6 +81,8 @@ global $SITE, $SERVICES, $AREAS;
           <a href="/locations">View all service areas</a>
         </div>
       </details>
+      <a href="/about">About</a>
+      <a href="/contact">Contact</a>
     </nav>
     <a class="btn btn-ocean header-cta" href="<?= esc($SITE['phone_href']) ?>"><?= esc($SITE['phone']) ?></a>
     <div class="mobile-head">
@@ -85,7 +92,7 @@ global $SITE, $SERVICES, $AREAS;
         <div class="mobile-menu">
           <a href="/">Home</a>
           <p class="drop-group">Water Damage Services</p>
-          <?php foreach ($SERVICES as $s): ?>
+          <?php foreach (nav_services() as $s): ?>
           <a href="<?= esc($s['slug']) ?>"><?= esc($s['nav']) ?></a>
           <?php endforeach; ?>
           <p class="drop-group">Service Areas</p>
@@ -93,6 +100,8 @@ global $SITE, $SERVICES, $AREAS;
           <a href="<?= esc($a['slug']) ?>"><?= esc($a['city']) ?>, GA</a>
           <?php endforeach; ?>
           <a href="/locations">View all service areas</a>
+          <a href="/about">About</a>
+          <a href="/contact">Contact</a>
           <a class="btn btn-ocean" href="<?= esc($SITE['phone_href']) ?>"><?= esc($SITE['phone']) ?></a>
         </div>
       </details>

@@ -1,10 +1,12 @@
 # ACWORTH — MASTER CHECKLIST (tick only on verified evidence, never on claim)
 
-## 0. SOURCE (done 2026-11-11 ~17:43 PKT)
-- [x] Doc read: 'Water Damage Restoration in Acworth', 3,026 words, H1 x1, H2 x18, H3 x29, FAQ 6
+## 0. SOURCE (CORRECTED 2026-11-12 ~19:48 PKT — old Tab-1-only read was WRONG)
+- [x] Doc re-read with includeTabsContent=true: 'Water Damage Restoration in Acworth', **41 tabs, 50,057 words** (raw: doc-tabs-raw.json; counts: qa/DOC-TABS-2026-11-12.md). Tab 1 = 3,026 words (byte-identical to the 2026-11-11 read — the old "HOMEPAGE ONLY" record was a Tab-1-only artifact).
 - [x] Phone (470) 672-2095 only; Cobb dispatch 770-419-6201 is plain text, not our phone; ZIPs 30101 + 30102
-- [x] 26 routes extracted from doc parentheses (19 services + locations hub + 5 areas + homepage)
+- [x] **41 routes** from the full doc (homepage + 25 services + 5 areas + hub + 7 resources + about + contact). Old "26 routes" record is superseded.
 - [x] San Bruno pattern inspected (index.php, pages.php, functions.php, header/footer, lead-form/handler, media.php, main.js, .htaccess, robots, llms, manifest)
+- [ ] STANDARD (his order 2026-11-12): content 1001% verbatim from his docs — na ek lafz kam, na ek lafz zyada, nothing invented; every site better than the last; applies to all future work on this site. Recorded in DO-DONT-LIST.md.
+- [ ] CONTENT-FULLNESS GATE in every QA round: per-page visible-word count (total + main-body excl. header/footer/sticky bar + UNIQUE prose). EMPTY = main <100 words, THIN = 100–300. A 200 + H1=1 page can still be effectively empty. Rendered-state checks mandatory, never curl alone.
 
 ## 1. PHP SCAFFOLD (fresh code, Acworth only)
 - [x] index.php front controller (router, 308 slash->no-slash, sitemap.xml dynamic, static-file serving)
@@ -33,10 +35,9 @@
 - [x] All doc links present, anchors 3-5 words, 1 link per target, 0 self-links in body
 - [x] 15 service cards (own 16:9 photo slot each), 7 process steps (own photo slot each), 3 real tables, 5 area cards
 
-## 4. LINKED PAGES (25 skeletons, verbatim summary only)
-- [x] Each: H1 x1, verbatim homepage summary, hero slot, theme, schema, internal links
-- [x] 19 services (incl. split water-heater/appliance/AC and hardwood/carpet pages; insurance page = 3 verbatim sentences, no self-link), locations hub, 5 area cities
-- [x] No invented words on any skeleton page
+## 4. LINKED PAGES — SUPERSEDED 2026-11-12 (thin by construction; full tabs exist)
+- [x] As built 2026-11-11: each inner page H1 x1, verbatim homepage summary, hero slot, theme, schema, internal links; 19 services + hub + 5 areas; no invented words
+- [ ] REBUILD (his standard): every route gets its FULL verbatim tab content (services 1,042–1,586w, areas 1,260–1,586w, resources 917–1,020w, hub 766w, about 831w, contact 570w); 15 missing routes added (6 services, 7 resources, about, contact) → 41 routes total; then full re-verification incl. content-fullness gate per page, review pack regen, re-export + re-push on his word + token
 
 ## 5. GOOGLE / SEO A-to-Z (per page, 26/26)
 - [x] Self-canonical 1/page, og:url = canonical, sitemap = canonical (26/26 match)
@@ -56,4 +57,4 @@
 ## 7. DELIVERY GATES (his word only)
 - [ ] His review of screenshots + points sheet
 - [ ] Push/deploy/domain/DNS ONLY on his explicit word + token (token rule: reuse in-window 3-4 days, transient use, delete temp files)
-- [ ] Live links file (26 URLs) delivered as downloadable .txt
+- [x] Live links file (26 URLs) delivered as downloadable .txt — 2026-11-12 ~19:35 PKT (26-route site; 41-URL list after rebuild)
