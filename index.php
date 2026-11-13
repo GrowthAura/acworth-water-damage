@@ -96,7 +96,7 @@ $HEAD = [
     'description' => 'The page you asked for is not here. Call ' . $SITE['phone'] . ' for 24/7 emergency water damage help in Acworth, GA 30101 and 30102.',
     'canonical' => site_url('/'),
     'og_type' => 'website',
-    'ld' => ld_json([ld_local_business()]),
+    // P3-6: error pages carry no business JSON-LD.
 ];
 $currentSlug = $path;
 $show_map = false;
@@ -175,7 +175,7 @@ function render_home($form = null) {
         'canonical' => site_url('/'),
         'og_type' => 'website',
         'og_image' => $homeHero ? site_url($homeHero['src']) : null,
-        'ld' => ld_json([ld_local_business(), ld_website(), ld_breadcrumb([['label' => 'Home', 'href' => '/']]), ld_faq($FAQS), ld_howto($PROCESS_H2, $PROCESS_INTRO, $PROCESS_STEPS), ld_speakable()]),
+        'ld' => ld_json([ld_local_business(ld_offer_catalog()), ld_website(), ld_webpage('/', ['title' => $HOME_META['title'], 'description' => $HOME_META['description']], 'WebPage', null, false), ld_faq($FAQS, '/'), ld_howto($PROCESS_H2, $PROCESS_INTRO, $PROCESS_STEPS, '/'), ld_speakable()]),
     ];
     $currentSlug = '/';
     $show_map = true;
@@ -206,6 +206,7 @@ function render_home($form = null) {
   </dl>
 </div></section>
 <section class="section section-cream" id="services"><div class="container content-block">
+  <h2><?= esc($SERVICES_H2) ?></h2>
   <p class="lead"><?= esc($SERVICES_INTRO) ?></p>
   <div class="cards">
     <?php foreach ($CARDS as $c): $cimg = card_img($c); ?>
@@ -354,16 +355,48 @@ function render_page($slug, $page, $form = null) {
         $crumbLabel = $page['h1'];
     }
     $crumbs[] = ['label' => $crumbLabel];
-    $graph = [ld_local_business(), ld_breadcrumb($crumbs)];
+    // Chain 3 schema fix 2026-11-14: WebPage (+ AboutPage/ContactPage) on
+    // every route; Service with @id/url/description, provider as a bare
+    // #business @id, full areaServed and its own hero image; Article on
+    // resource pages; HowTo only where the doc yields clean verbatim steps.
+    $graph = [ld_local_business()];
+    $webpageType = ($slug === '/about') ? 'AboutPage' : (($slug === '/contact') ? 'ContactPage' : 'WebPage');
+    $mainEntityId = null;
     if ($isService) {
-        $graph[] = ld_service($page['h1'], 'Acworth');
+        // P2-6: serviceType from the page's own H1 on the 3 mislabelled
+        // pages only; the other 22 keep 'Water Damage Restoration'.
+        $serviceType = match ($slug) {
+            '/fire-water-damage-acworth-ga' => 'Fire Damage Restoration',
+            '/mold-inspection-acworth-ga' => 'Mold Inspection',
+            '/water-damage-insurance-claim-acworth-ga' => 'Water Damage Insurance Claim Help',
+            default => 'Water Damage Restoration',
+        };
+        $graph[] = ld_service($slug, $page['h1'], $meta['description'],
+            ['serviceType' => $serviceType, 'areaServed' => ld_area_served_full()]);
+        $mainEntityId = site_url($slug) . '#service';
     }
     if ($type === 'area') {
-        $graph[] = ld_service('Water Damage Restoration', $page['area']['city']);
+        // P3-5: name is the page H1, not the generic service name.
+        $graph[] = ld_service($slug, $page['h1'], $meta['description'],
+            ['serviceType' => 'Water Damage Restoration', 'areaServed' => ld_area_served_city($page['area']['city'])]);
+        $mainEntityId = site_url($slug) . '#service';
     }
+    if ($type === 'resource') {
+        $graph[] = ld_article($slug, $page['h1']);
+        $mainEntityId = site_url($slug) . '#article';
+    }
+    $graph[] = ld_breadcrumb($crumbs, $slug);
+    $graph[] = ld_webpage($slug, $meta, $webpageType, $mainEntityId, true);
     if (!empty($page['faqs'])) {
-        $graph[] = ld_faq($page['faqs']);
+        $graph[] = ld_faq($page['faqs'], $slug);
     }
+    // P2-8: HowTo only where the doc prose yields clean verbatim steps;
+    // a null return means the candidate was skipped (see the helpers).
+    $howtoExtra = null;
+    if ($slug === '/resources/water-damage-first-24-hours') $howtoExtra = howto_first24($page['blocks'] ?? []);
+    elseif ($slug === '/locations/dallas-ga') $howtoExtra = howto_dallas_crawlspace($page['blocks'] ?? []);
+    elseif ($slug === '/water-damage-insurance-claim-acworth-ga') $howtoExtra = howto_claim_process($page['blocks'] ?? []);
+    if ($howtoExtra) $graph[] = ld_howto($howtoExtra['name'], $howtoExtra['description'], $howtoExtra['steps'], $slug);
     $pageHero = page_img($slug, 'hero');
     // SEO FIX 2026-11-13 (P2-3): DOCUMENTED og:image fallback. The 4 pages
     // with no hero image (water-mitigation, crawl-space, ceiling, hardwood)

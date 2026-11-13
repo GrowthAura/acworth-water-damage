@@ -271,6 +271,7 @@ li{margin-bottom:.5em}
 }
 .phase-media{aspect-ratio:16/9;overflow:hidden}
 .phase-media img{width:100%;height:100%;object-fit:cover}
+.phase-media--empty{background:var(--accent-faint)}
 .phase-card .step-title,.phase-card p{padding:0 24px}
 .phase-card .step-title{
   padding-top:24px;color:#fff;font-family:var(--font-display);

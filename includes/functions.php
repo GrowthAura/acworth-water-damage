@@ -464,14 +464,59 @@ function page_meta($slug, $pages) {
 }
 
 // ---- JSON-LD -------------------------------------------------------------
-function ld_local_business() {
-    global $SITE;
+// Chain 3 schema fix 2026-11-14 (audit: qa/SCHEMA-AUDIT-2026-11-14.md).
+// Honest-only: every value comes from the doc or the site itself — no
+// ratings, reviews, prices, geo, dates, sameAs, logo, email or
+// certifications anywhere (see qa/SCHEMA-FIX-REPORT-2026-11-14.md).
+
+// Full service area: 6 cities + 4 counties (Cobb, Cherokee, Bartow,
+// Paulding — the counties named in the doc's nearby-intro copy).
+function ld_area_served_full() {
     return [
+        ['@type' => 'City', 'name' => 'Acworth'],
+        ['@type' => 'City', 'name' => 'Kennesaw'],
+        ['@type' => 'City', 'name' => 'Woodstock'],
+        ['@type' => 'City', 'name' => 'Cartersville'],
+        ['@type' => 'City', 'name' => 'Dallas'],
+        ['@type' => 'City', 'name' => 'Hiram'],
+        ['@type' => 'AdministrativeArea', 'name' => 'Cobb County'],
+        ['@type' => 'AdministrativeArea', 'name' => 'Cherokee County'],
+        ['@type' => 'AdministrativeArea', 'name' => 'Bartow County'],
+        ['@type' => 'AdministrativeArea', 'name' => 'Paulding County'],
+    ];
+}
+
+// One area page's coverage: its own city + its county.
+function ld_area_served_city($city) {
+    $county = [
+        'Kennesaw' => 'Cobb County',
+        'Woodstock' => 'Cherokee County',
+        'Cartersville' => 'Bartow County',
+        'Dallas' => 'Paulding County',
+        'Hiram' => 'Paulding County',
+    ][$city] ?? null;
+    $out = [['@type' => 'City', 'name' => $city]];
+    if ($county) $out[] = ['@type' => 'AdministrativeArea', 'name' => $county];
+    return $out;
+}
+
+// Absolute URL of a page's OWN hero image, or null when its hero slot is
+// honestly empty (page_img() checks the file is on disk). Never falls back
+// to another page's photo — the 4 empty-slot pages get no image at all.
+function page_hero_url($slug) {
+    if (!function_exists('page_img')) return null;
+    $hero = page_img($slug, 'hero');
+    return $hero ? site_url($hero['src']) : null;
+}
+
+function ld_local_business($hasOfferCatalog = null) {
+    global $SITE;
+    $node = [
         '@type' => 'LocalBusiness',
         '@id' => site_url('/') . '#business',
         'name' => $SITE['brand'],
         'description' => '24/7 emergency water damage restoration in Acworth, GA 30101 and 30102. Crew dispatched immediately.',
-        'telephone' => $SITE['phone'],
+        'telephone' => '+1-470-672-2095',
         'url' => site_url('/'),
         'address' => [
             '@type' => 'PostalAddress',
@@ -480,22 +525,17 @@ function ld_local_business() {
             'postalCode' => '30101',
             'addressCountry' => 'US',
         ],
-        'areaServed' => [
-            ['@type' => 'City', 'name' => 'Acworth'],
-            ['@type' => 'City', 'name' => 'Kennesaw'],
-            ['@type' => 'City', 'name' => 'Woodstock'],
-            ['@type' => 'City', 'name' => 'Cartersville'],
-            ['@type' => 'City', 'name' => 'Dallas'],
-            ['@type' => 'City', 'name' => 'Hiram'],
-            ['@type' => 'AdministrativeArea', 'name' => 'Cobb County'],
-            ['@type' => 'AdministrativeArea', 'name' => 'Cherokee County'],
-        ],
+        'areaServed' => ld_area_served_full(),
         'openingHoursSpecification' => [
             '@type' => 'OpeningHoursSpecification',
             'dayOfWeek' => ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
             'opens' => '00:00', 'closes' => '23:59',
         ],
     ];
+    $hero = page_hero_url('/');
+    if ($hero) $node['image'] = $hero;
+    if ($hasOfferCatalog) $node['hasOfferCatalog'] = $hasOfferCatalog;
+    return $node;
 }
 
 function ld_website() {
@@ -505,10 +545,23 @@ function ld_website() {
         '@id' => site_url('/') . '#website',
         'url' => site_url('/'),
         'name' => $SITE['brand'],
+        'inLanguage' => 'en-US',
+        'publisher' => ['@id' => site_url('/') . '#business'],
     ];
 }
 
-function ld_breadcrumb($crumbs) {
+// Homepage offer catalog: the 25 services, name + url each, from
+// nav_services() (doc order). No prices, no invented labels.
+function ld_offer_catalog() {
+    $items = [];
+    foreach (nav_services() as $s) {
+        $items[] = ['@type' => 'Offer',
+            'itemOffered' => ['@type' => 'Service', 'name' => $s['nav'], 'url' => site_url($s['slug'])]];
+    }
+    return ['@type' => 'OfferCatalog', 'itemListElement' => $items];
+}
+
+function ld_breadcrumb($crumbs, $slug) {
     $items = [];
     $i = 1;
     foreach ($crumbs as $c) {
@@ -517,10 +570,10 @@ function ld_breadcrumb($crumbs) {
         $items[] = $item;
         $i++;
     }
-    return ['@type' => 'BreadcrumbList', 'itemListElement' => $items];
+    return ['@type' => 'BreadcrumbList', '@id' => site_url($slug) . '#breadcrumb', 'itemListElement' => $items];
 }
 
-function ld_faq($faqs) {
+function ld_faq($faqs, $slug) {
     $items = [];
     foreach ($faqs as $f) {
         $items[] = [
@@ -529,19 +582,21 @@ function ld_faq($faqs) {
             'acceptedAnswer' => ['@type' => 'Answer', 'text' => $f['a']],
         ];
     }
-    return ['@type' => 'FAQPage', 'mainEntity' => $items];
+    return ['@type' => 'FAQPage', '@id' => site_url($slug) . '#faq', 'mainEntity' => $items];
 }
 
-function ld_howto($name, $description, $steps) {
+function ld_howto($name, $description, $steps, $slug = '/') {
     $items = [];
     foreach ($steps as $s) {
-        $items[] = [
-            '@type' => 'HowToStep',
-            'name' => $s['label'],
-            'text' => $s['text'],
-        ];
+        $step = ['@type' => 'HowToStep'];
+        if (!empty($s['label'])) $step['name'] = $s['label'];
+        $step['text'] = $s['text'];
+        $items[] = $step;
     }
-    return ['@type' => 'HowTo', 'name' => $name, 'description' => $description, 'step' => $items];
+    $node = ['@type' => 'HowTo', '@id' => site_url($slug) . '#howto', 'name' => $name];
+    if ($description !== '' && $description !== null) $node['description'] = $description;
+    $node['step'] = $items;
+    return $node;
 }
 
 function ld_speakable() {
@@ -551,19 +606,148 @@ function ld_speakable() {
     ];
 }
 
-function ld_service($name, $areaName) {
-    global $SITE;
-    return [
+function ld_service($slug, $name, $description, $opts = []) {
+    $node = [
         '@type' => 'Service',
+        '@id' => site_url($slug) . '#service',
+        'url' => site_url($slug),
         'name' => $name,
-        'serviceType' => 'Water Damage Restoration',
-        'provider' => [
-            '@type' => 'LocalBusiness',
-            'name' => $SITE['brand'],
-            'telephone' => $SITE['phone'],
-        ],
-        'areaServed' => ['@type' => 'City', 'name' => $areaName],
+        'description' => $description,
+        'serviceType' => $opts['serviceType'] ?? 'Water Damage Restoration',
+        // P1-1 fix: provider is a bare @id reference to the page's one
+        // business node — never a second anonymous LocalBusiness.
+        'provider' => ['@id' => site_url('/') . '#business'],
+        'areaServed' => $opts['areaServed'] ?? ld_area_served_full(),
     ];
+    $hero = page_hero_url($slug);
+    if ($hero) $node['image'] = $hero;
+    return $node;
+}
+
+// WebPage for every route. $type is AboutPage on /about, ContactPage on
+// /contact, WebPage elsewhere. $mainEntityId is the page's Service/Article
+// @id where one exists; $hasBreadcrumb is false on the homepage, whose
+// 1-item BreadcrumbList was dropped (no visible trail to match it).
+function ld_webpage($slug, $meta, $type = 'WebPage', $mainEntityId = null, $hasBreadcrumb = true) {
+    $node = [
+        '@type' => $type,
+        '@id' => site_url($slug) . '#webpage',
+        'url' => site_url($slug),
+        'name' => $meta['title'],
+        'description' => $meta['description'],
+        'inLanguage' => 'en-US',
+        // WebSite is defined on the homepage; inner pages reference it
+        // site-wide (the standard WebPage.isPartOf pattern).
+        'isPartOf' => ['@id' => site_url('/') . '#website'],
+    ];
+    if ($hasBreadcrumb) $node['breadcrumb'] = ['@id' => site_url($slug) . '#breadcrumb'];
+    if ($mainEntityId) $node['mainEntity'] = ['@id' => $mainEntityId];
+    return $node;
+}
+
+// Article for the 7 resource guides. NO dates — the doc carries none.
+// image = the guide's own hero where one exists, else omitted.
+function ld_article($slug, $headline) {
+    $node = [
+        '@type' => 'Article',
+        '@id' => site_url($slug) . '#article',
+        'headline' => $headline,
+        'author' => ['@id' => site_url('/') . '#business'],
+        'mainEntityOfPage' => site_url($slug),
+        'inLanguage' => 'en-US',
+    ];
+    $hero = page_hero_url($slug);
+    if ($hero) $node['image'] = $hero;
+    return $node;
+}
+
+// ---- P2-8 HowTo extraction ---------------------------------------------
+// Steps verbatim from the doc tab's own blocks. Each helper returns
+// ['name'=>..., 'description'=>..., 'steps'=>[...]] or null when the prose
+// does not yield a clean ordered sequence — the caller then adds no HowTo.
+
+// /resources/water-damage-first-24-hours: the "Quick Answers" defs carry
+// four explicitly numbered steps (Step 1–4); the two non-step defs (Mold
+// window, Street main break) are not steps and are left out.
+function howto_first24($blocks) {
+    $n = count($blocks);
+    for ($i = 0; $i < $n; $i++) {
+        if (($blocks[$i]['kind'] ?? '') === 'h2' && $blocks[$i]['text'] === 'What should you do first after water damage?') {
+            $desc = (($blocks[$i + 1]['kind'] ?? '') === 'para') ? ($blocks[$i + 1]['text'] ?? '') : '';
+            for ($j = $i + 1; $j < $n; $j++) {
+                if (($blocks[$j]['kind'] ?? '') !== 'defs') continue;
+                $steps = [];
+                foreach ($blocks[$j]['items'] as $it) {
+                    if (preg_match('/^Step \d+$/', $it['label'] ?? '')) {
+                        $steps[] = ['label' => $it['label'], 'text' => $it['text']];
+                    }
+                }
+                if (count($steps) === 4) {
+                    return ['name' => 'What should you do first after water damage?',
+                            'description' => $desc, 'steps' => $steps];
+                }
+                return null;
+            }
+            return null;
+        }
+    }
+    return null;
+}
+
+// /locations/dallas-ga: the crawl-space paragraph states "four steps" and
+// then gives them as four ordinal-led sentences (First/Second/Third/
+// Fourth), followed by one trailing "Long-term fixes..." sentence that is
+// commentary, not a step. Steps are the four sentences verbatim.
+function howto_dallas_crawlspace($blocks) {
+    $n = count($blocks);
+    for ($i = 0; $i < $n; $i++) {
+        if (($blocks[$i]['kind'] ?? '') === 'h2' && $blocks[$i]['text'] === 'Crawl space water in Dallas, GA: what we do') {
+            $para = (($blocks[$i + 1]['kind'] ?? '') === 'para') ? ($blocks[$i + 1]['text'] ?? '') : '';
+            if ($para === '') return null;
+            $sentences = preg_split('/(?<=\.)\s+/', trim($para));
+            $ordinals = ['First', 'Second', 'Third', 'Fourth'];
+            if (count($sentences) < 5) return null;
+            $steps = [];
+            for ($k = 0; $k < 4; $k++) {
+                $s = $sentences[$k + 1];
+                if (!str_starts_with($s, $ordinals[$k] . ',')) return null;
+                $steps[] = ['label' => null, 'text' => $s];
+            }
+            return ['name' => 'Crawl space water in Dallas, GA: what we do',
+                    'description' => $sentences[0], 'steps' => $steps];
+        }
+    }
+    return null;
+}
+
+// /water-damage-insurance-claim-acworth-ga: the "claim process step by
+// step" bullets are eight imperative steps; the trailing ninth bullet is a
+// closing note ("...starts with step 3...") that comments on the steps
+// instead of being one, so it is left out.
+function howto_claim_process($blocks) {
+    $n = count($blocks);
+    for ($i = 0; $i < $n; $i++) {
+        if (($blocks[$i]['kind'] ?? '') === 'h2' && $blocks[$i]['text'] === 'The water damage claim process step by step') {
+            for ($j = $i + 1; $j < $n; $j++) {
+                if (($blocks[$j]['kind'] ?? '') !== 'bullets') continue;
+                $items = $blocks[$j]['items'];
+                $last = count($items) - 1;
+                if ($last >= 0) {
+                    $t = $items[$last]['text'] ?? '';
+                    if (is_process_note($t, $items[$last]['links'] ?? []) || preg_match('/\bstarts with step \d+\b/i', $t)) {
+                        array_pop($items);
+                    }
+                }
+                if (count($items) < 2) return null;
+                $steps = [];
+                foreach ($items as $it) $steps[] = ['label' => null, 'text' => $it['text']];
+                return ['name' => 'The water damage claim process step by step',
+                        'description' => '', 'steps' => $steps];
+            }
+            return null;
+        }
+    }
+    return null;
 }
 
 function ld_json($graph) {
