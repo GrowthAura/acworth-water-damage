@@ -57,7 +57,7 @@ global $SITE, $SERVICES, $AREAS;
   </div>
   <div class="container header-row">
     <a class="brand" href="/" aria-label="Acworth Water Damage Restoration, home">
-      <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" width="24" height="24"><path d="M12 2.5C12 2.5 5.5 10.2 5.5 14.8a6.5 6.5 0 0 0 13 0C18.5 10.2 12 2.5 12 2.5Z" fill="#08699C"/><path d="M9.2 15.2a2.8 2.8 0 0 0 2.3 2.7" fill="none" stroke="#F6F0E2" stroke-width="1.4" stroke-linecap="round"/></svg></span>
+      <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" width="24" height="24"><path d="M12 2.5C12 2.5 5.5 10.2 5.5 14.8a6.5 6.5 0 0 0 13 0C18.5 10.2 12 2.5 12 2.5Z" fill="#08699C"/><path d="M9.2 15.2a2.8 2.8 0 0 0 2.3 2.7" fill="none" stroke="#FFFFFF" stroke-width="1.4" stroke-linecap="round"/></svg></span>
       <span class="brand-word">Acworth<br>Water Damage<small><?= esc($SITE['brand_small']) ?></small></span>
     </a>
     <nav class="main-nav" aria-label="Main">

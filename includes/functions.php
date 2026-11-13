@@ -76,6 +76,29 @@ function linkify_multi($text, $links, $currentSlug = null) {
     return $out;
 }
 
+// Footer Services column: the 7 core services only (DESIGN FIX
+// 2026-11-13 — user order: footer lists 7, not all 25). Header nav,
+// mobile menu and the lead-form service select keep the full
+// nav_services() list untouched. Order = core importance.
+function nav_services_footer() {
+    $core = [
+        '/emergency-water-extraction-acworth-ga',
+        '/water-mitigation-acworth-ga',
+        '/flood-damage-restoration-acworth-ga',
+        '/burst-pipe-water-damage-acworth-ga',
+        '/flooded-basement-cleanup-acworth-ga',
+        '/sewage-backup-cleanup-acworth-ga',
+        '/mold-remediation-acworth-ga',
+    ];
+    $all = [];
+    foreach (nav_services() as $s) { $all[$s['slug']] = $s; }
+    $out = [];
+    foreach ($core as $slug) {
+        if (isset($all[$slug])) { $out[] = $all[$slug]; }
+    }
+    return $out;
+}
+
 function render_para_links($para, $currentSlug = null) {
     if (is_string($para)) return '<p>' . esc($para) . '</p>';
     $text = $para['text'] ?? '';

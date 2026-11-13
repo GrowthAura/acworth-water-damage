@@ -36,9 +36,10 @@ $map_src = 'https://www.google.com/maps?q=' . rawurlencode($SITE['map_query']) .
     <div class="footer-col">
       <p class="footer-h">Services</p>
       <ul>
-        <?php foreach (nav_services() as $s): ?>
+        <?php foreach (nav_services_footer() as $s): ?>
         <li><a href="<?= esc($s['slug']) ?>"><?= esc($s['nav']) ?></a></li>
         <?php endforeach; ?>
+        <li><a class="footer-more" href="/#services">View all services</a></li>
       </ul>
     </div>
     <div class="footer-col">

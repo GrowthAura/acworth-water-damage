@@ -2,7 +2,9 @@
    ACWORTH WATER DAMAGE RESTORATION — Editorial Design System
    Written fresh for this site.
    Type: Fraunces (display serif) + Inter (body)
-   Palette: deeper warm paper / midnight ink / rich ocean accent (UX10 2026-11-13)
+   Palette: white background / midnight ink / rich ocean accent
+   (DESIGN FIX 2026-11-13: warm cream/orange wash removed site-wide —
+   body + all sections white, gold only as a tiny decorative rule.)
    ============================================================ */
 /* SEO FIX 2026-11-13 (P3-7): self-hosted fonts — latin variable woff2,
    downloaded from Google Fonts (same files the css2 API serves for the
@@ -18,9 +20,6 @@
   src:url(/assets/fonts/inter-latin.woff2) format("woff2");
 }
 :root{
-  --paper:#F6F0E2;
-  --paper-2:#EEE4CF;
-  --paper-3:#E2D5B6;
   --white:#FFFFFF;
   --ink:#071527;
   --ink-2:#0F2A42;
@@ -30,11 +29,10 @@
   --accent-ink:#04344E;
   --accent-soft:#D9EDF7;
   --accent-faint:#ECF4F9;
-  --line:#DCD0B4;
-  --line-soft:#EAE1CB;
+  --line:#D8DEE4;
+  --line-soft:#E8ECF0;
   --text:#1C2836;
   --muted:#47586A;
-  --muted-warm:#6E6858;
   --gold:#96771C;
   --radius:20px;
   --radius-sm:12px;
@@ -54,7 +52,7 @@ html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;overflow-x:hidden}
 body{
   font-family:var(--font-body);
   color:var(--text);
-  background:var(--paper);
+  background:var(--white);
   line-height:1.8;
   font-size:18px;
   overflow-x:hidden;
@@ -80,10 +78,12 @@ h3{font-size:clamp(1.32rem,2.4vw,1.78rem);margin-bottom:.5em;font-weight:600}
 p{margin-bottom:1.2em}
 ul,ol{margin:0 0 1.15em 1.3em}
 li{margin-bottom:.5em}
-.lead{font-size:1.125rem;line-height:1.75;color:var(--muted);max-width:88ch}
+.lead{font-size:1.125rem;line-height:1.75;color:var(--muted);max-width:96ch}
 .container{max-width:var(--maxw);margin:0 auto;padding:0 28px}
 .section{padding:88px 0;position:relative}
-.section-cream{background:var(--paper-2);border-top:1px solid var(--line-soft)}
+/* DESIGN FIX 2026-11-13: .section-cream is white now (cream wash removed);
+   the class stays so existing markup needs no change. */
+.section-cream{background:var(--white);border-top:1px solid var(--line-soft)}
 .section-tint{background:var(--accent-faint);border-top:1px solid var(--line-soft)}
 .section-navy{background:var(--ink);color:#DCE6EF}
 .section-navy h2,.section-navy h3{color:#fff}
@@ -111,23 +111,23 @@ li{margin-bottom:.5em}
 .btn:hover{transform:translateY(-2px)}
 .btn-ocean{background:var(--accent);color:#fff;box-shadow:var(--shadow-blue)}
 .btn-ocean:hover{background:var(--accent-deep);color:#fff}
-.btn-cream{background:#FFF3D3;color:var(--ink);border-color:#E4D3A6}
+.btn-cream{background:#fff;color:var(--ink);border-color:var(--line)}
 .btn-cream:hover{background:#fff;color:var(--ink)}
 .btn-navy{background:var(--ink);color:#fff}
 .btn-navy:hover{background:var(--ink-2);color:#fff}
-.btn-outline{background:transparent;color:var(--ink);border-color:#D3C5A4}
+.btn-outline{background:transparent;color:var(--ink);border-color:var(--line)}
 .btn-outline:hover{border-color:var(--accent);color:var(--accent-deep)}
 
 /* ---------- Top bar + header ---------- */
 .topbar{
-  background:var(--paper-2);color:var(--ink-2);font-size:.84rem;font-weight:600;
+  background:var(--white);color:var(--ink-2);font-size:.84rem;font-weight:600;
   letter-spacing:.04em;border-bottom:1px solid var(--line-soft);
 }
 .topbar-inner{max-width:var(--maxw-wide);margin:0 auto;padding:10px 28px;
   display:flex;justify-content:space-between;align-items:center;gap:16px}
 .topbar a{color:var(--accent-deep);font-weight:700}
 .site-header{
-  position:sticky;top:0;z-index:100;background:rgba(246,240,226,.96);
+  position:sticky;top:0;z-index:100;background:rgba(255,255,255,.96);
   backdrop-filter:blur(8px);border-bottom:1px solid var(--line-soft);
 }
 .site-header.scrolled{box-shadow:var(--shadow-sm)}
@@ -154,7 +154,7 @@ li{margin-bottom:.5em}
   padding:11px 14px;border-radius:10px;font-weight:600;font-size:17px;color:var(--ink-2);
   cursor:pointer;list-style:none;white-space:nowrap;
 }
-.main-nav>a:hover,.main-nav summary:hover{background:var(--paper-2);color:var(--accent-deep)}
+.main-nav>a:hover,.main-nav summary:hover{background:var(--accent-faint);color:var(--accent-deep)}
 .main-nav details{position:relative}
 .main-nav summary::-webkit-details-marker{display:none}
 .main-nav summary::after{
@@ -185,8 +185,8 @@ li{margin-bottom:.5em}
   background:linear-gradient(100deg,rgba(7,21,39,.90) 0%,rgba(7,21,39,.74) 46%,rgba(7,21,39,.40) 100%);
 }
 .hero-content{position:relative;z-index:2;padding:104px 28px 112px;max-width:var(--maxw);margin:0 auto}
-.hero-content h1{color:#fff;max-width:24ch;margin-bottom:20px}
-.hero-intro{font-size:1.15rem;line-height:1.7;color:#E6EEF5;max-width:68ch;margin-bottom:30px}
+.hero-content h1{color:#fff;max-width:30ch;margin-bottom:20px}
+.hero-intro{font-size:1.15rem;line-height:1.7;color:#E6EEF5;max-width:84ch;margin-bottom:30px}
 .hero-ctas{display:flex;flex-wrap:wrap;gap:14px}
 .hero-ctas .btn{min-width:min(300px,100%)}
 .hero-short .hero-content{padding:72px 28px 80px}
@@ -226,9 +226,11 @@ li{margin-bottom:.5em}
   font-size:13px;flex-shrink:0;
 }
 
-/* ---------- Content width (wide-text rule) ---------- */
-.content-block{max-width:88ch}
-.content-block>ul,.content-block>ol{max-width:88ch}
+/* ---------- Content width (wide-text rule — DESIGN FIX 2026-11-13:
+   user's "content wide" order overrides the old 88ch rule; 96ch keeps
+   lines readable while using the full container width.) ---------- */
+.content-block{max-width:96ch}
+.content-block>ul,.content-block>ol{max-width:96ch}
 
 /* ---------- Quick answers ---------- */
 .quick-list{margin:0 0 1.15em}
@@ -241,19 +243,24 @@ li{margin-bottom:.5em}
 .quick-list dd{margin:0}
 
 /* ---------- Cards ---------- */
-.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;margin-top:38px}
+/* DESIGN FIX 2026-11-13 (cards equal): grid rows already stretch, but
+   cards WITHOUT an image rendered no .card-media at all, so their h3
+   started 159px higher than image cards' h3 in the same row. The
+   template now always renders .card-media (empty slots get a pale-blue
+   band); .card-body flexes so every card fills its row height. */
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;margin-top:38px;align-items:stretch}
 .card{
   background:#fff;border:1px solid var(--line-soft);border-radius:var(--radius);
-  overflow:hidden;box-shadow:var(--shadow-sm);display:flex;flex-direction:column;
+  overflow:hidden;box-shadow:var(--shadow-sm);display:flex;flex-direction:column;height:100%;
   transition:transform .2s ease,box-shadow .2s ease;
 }
 .card:hover{transform:translateY(-5px);box-shadow:var(--shadow-md)}
-.card-media{aspect-ratio:16/9;overflow:hidden;background:var(--paper-3);border-bottom:1px solid var(--line-soft)}
+.card-media{aspect-ratio:16/9;overflow:hidden;background:var(--accent-faint);border-bottom:1px solid var(--line-soft)}
 .card-media img{width:100%;height:100%;object-fit:cover}
-.card-body{padding:26px 28px 30px}
+.card-body{padding:26px 28px 30px;flex:1;display:flex;flex-direction:column}
 .card-body h3{margin-bottom:12px}
 .card-body p{margin-bottom:0;color:var(--text);line-height:1.7}
-.services-close{margin-top:36px;font-weight:600;color:var(--ink-2);max-width:88ch}
+.services-close{margin-top:36px;font-weight:600;color:var(--ink-2);max-width:96ch}
 
 /* ---------- Process ---------- */
 .phase-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;margin-top:38px}
@@ -280,8 +287,7 @@ li{margin-bottom:.5em}
   text-align:left;padding:15px 18px;border:1px solid var(--line);vertical-align:top;
 }
 .data-table thead th{background:var(--ink);color:#fff;font-family:var(--font-display);font-size:1.05rem;border-bottom:3px solid var(--accent)}
-.data-table tbody th{color:var(--ink);font-weight:700;background:var(--paper-2)}
-.data-table tbody tr:nth-child(even) td{background:var(--paper)}
+.data-table tbody th{color:var(--ink);font-weight:700;background:var(--accent-faint)}
 
 /* ---------- Scenarios ---------- */
 .scenario-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px;margin-top:30px}
@@ -321,7 +327,7 @@ li{margin-bottom:.5em}
   transition:transform .2s ease;
 }
 .faq-list details[open] .faq-toggle{transform:rotate(45deg)}
-.faq-answer{padding:0 4px 24px;max-width:88ch}
+.faq-answer{padding:0 4px 24px;max-width:96ch}
 .faq-answer p{margin-bottom:0}
 
 /* ---------- Call strip / final CTA ---------- */
@@ -332,13 +338,13 @@ li{margin-bottom:.5em}
 }
 .call-strip p{margin-bottom:0;font-weight:600;font-size:1.2rem}
 .call-strip .btn{flex-shrink:0;white-space:nowrap}
-.final-cta{padding:80px 0;background:var(--paper-2)}
+.final-cta{padding:80px 0;background:var(--white)}
 .final-cta-card{
   background:var(--ink);color:#fff;border-radius:var(--radius-lg);
   padding:56px 60px;box-shadow:var(--shadow-lg);text-align:center;
 }
 .final-cta-card h2{color:#fff;margin-left:auto;margin-right:auto}
-.final-cta-card p{color:#C7D3DF;max-width:88ch;margin-left:auto;margin-right:auto}
+.final-cta-card p{color:#C7D3DF;max-width:96ch;margin-left:auto;margin-right:auto}
 .final-cta-card .hero-ctas{justify-content:center}
 .final-cta .form-wrap{max-width:640px;margin:32px auto 0}
 
@@ -576,7 +582,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{
 
 /* ---------- 5. FAQ: hover + open-state signal ---------- */
 .faq-list summary{border-radius:var(--radius-sm)}
-.faq-list summary:hover{background:var(--paper-2)}
+.faq-list summary:hover{background:var(--accent-faint)}
 .faq-list details[open] summary h3{color:var(--accent-deep)}
 .faq-list details[open] .faq-toggle{background:var(--accent);color:#fff}
 
@@ -612,7 +618,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{
 
 /* ---------- 11. Mobile menu: open state + scroll containment ---------- */
 .mobile-menu-wrap[open] summary{
-  background:var(--paper-2);border-color:var(--accent);color:var(--accent-deep);
+  background:var(--accent-faint);border-color:var(--accent);color:var(--accent-deep);
 }
 .mobile-menu{overscroll-behavior:contain}
 .mobile-menu a:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
@@ -668,8 +674,8 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{
 .process-note{margin-top:20px;font-weight:600;color:var(--ink-2)}
 
 /* ---------- P3-1: footer map fallback ----------
-   A failed/slow map shows a warm paper band, never a 340px void. */
-.footer-map-wrap{background:var(--paper-2)}
+   A failed/slow map shows a pale blue band, never a 340px void. */
+.footer-map-wrap{background:var(--accent-faint)}
 
 /* ---------- Mobile P2-1: footer tap targets >=24px ----------
    22px links gain 2px padding top + bottom (26px hit area). */

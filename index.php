@@ -205,13 +205,12 @@ function render_home($form = null) {
     <?php endforeach; ?>
   </dl>
 </div></section>
-<section class="section section-cream"><div class="container content-block">
-  <h2><?= esc($SERVICES_H2) ?></h2>
+<section class="section section-cream" id="services"><div class="container content-block">
   <p class="lead"><?= esc($SERVICES_INTRO) ?></p>
   <div class="cards">
     <?php foreach ($CARDS as $c): $cimg = card_img($c); ?>
     <article class="card">
-      <?php if ($cimg): ?><div class="card-media"><?= img_tag($cimg, 1200, 675, 'lazy', '(max-width: 700px) 348px, 263px') ?></div><?php endif; ?>
+      <?php if ($cimg): ?><div class="card-media"><?= img_tag($cimg, 1200, 675, 'lazy', '(max-width: 700px) 348px, 263px') ?></div><?php else: ?><div class="card-media card-media--empty" aria-hidden="true"></div><?php endif; ?>
       <div class="card-body"><h3><?= esc($c['h3']) ?></h3><?= card_para_multi($c, $SERVICES_BY_SLUG, '/') ?></div>
     </article>
     <?php endforeach; ?>
@@ -235,7 +234,7 @@ function render_home($form = null) {
   <div class="phase-grid">
     <?php foreach ($PROCESS_STEPS as $i => $s): $pimg = page_img('process-' . ($i + 1), 'img'); ?>
     <div class="phase-card">
-      <?php if ($pimg): ?><div class="phase-media"><?= img_tag($pimg, 1200, 675, 'lazy', '(max-width: 700px) 348px, 193px') ?></div><?php endif; ?>
+      <?php if ($pimg): ?><div class="phase-media"><?= img_tag($pimg, 1200, 675, 'lazy', '(max-width: 700px) 348px, 193px') ?></div><?php else: ?><div class="phase-media phase-media--empty" aria-hidden="true"></div><?php endif; ?>
       <p class="step-title"><?= ($i + 1) ?>. <?= esc($s['label']) ?></p><p><?= esc($s['text']) ?></p>
     </div>
     <?php endforeach; ?>
