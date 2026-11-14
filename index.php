@@ -211,7 +211,7 @@ function render_home($form = null) {
   <div class="cards">
     <?php foreach ($CARDS as $c): $cimg = card_img($c); ?>
     <article class="card">
-      <?php if ($cimg): ?><div class="card-media"><?= img_tag($cimg, 1200, 675, 'lazy', '(max-width: 700px) 348px, 263px') ?></div><?php else: ?><div class="card-media card-media--empty" aria-hidden="true"></div><?php endif; ?>
+      <?php if ($cimg): ?><div class="card-media"><?= img_tag($cimg, 1200, 675, 'lazy', '(max-width: 700px) 348px, 313px') ?></div><?php else: ?><div class="card-media card-media--empty" aria-hidden="true"></div><?php endif; ?>
       <div class="card-body"><h3><?= esc($c['h3']) ?></h3><?= card_para_multi($c, $SERVICES_BY_SLUG, '/') ?></div>
     </article>
     <?php endforeach; ?>

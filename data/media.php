@@ -1,9 +1,12 @@
 <?php
 // Acworth Water Damage — image map.
-// 27 of 32 original slots filled. 5 slots have no fitting Pexels photo and
+// 26 of 32 original slots filled. 6 slots have no fitting Pexels photo and
 // were removed from $MEDIA (flagged, see qa/IMAGE-REPORT.md): svc-water-mitigation,
 // svc-ceiling-water-damage, svc-hardwood-floor, svc-crawl-space,
-// process-5-drying. page_img() returns null for those slugs, so the site
+// process-5-drying, and process-4-extraction (removed 2026-11-14: Pexels
+// 6195273 is Lancaster's photo, live on the Lancaster homepage — see
+// qa/IMAGE-FIX-PROCESS4-2026-11-14.md; 11 fresh Pexels queries found no
+// clean replacement). page_img() returns null for those slugs, so the site
 // renders a navy panel instead of a broken img.
 // Rebuild 2026-11-12 added 15 more slots (6 new services, 7 resources,
 // about, contact) — files land from the image agent; unfilled slots render
@@ -65,7 +68,8 @@ $MEDIA = [
     'process-1-dispatch' => ['file' => 'process-1-dispatch.jpg', 'alt' => 'Dispatch'],
     'process-2-stop-source' => ['file' => 'process-2-stop-source.jpg', 'alt' => 'Stop the source'],
     'process-3-inspect' => ['file' => 'process-3-inspect.jpg', 'alt' => 'Inspect and map moisture'],
-    'process-4-extraction' => ['file' => 'process-4-extraction.jpg', 'alt' => 'Water extraction'],
+    // process-4-extraction REMOVED 2026-11-14 (Pexels 6195273 = Lancaster's
+    // photo). No $MEDIA entry: the step renders the empty band, like process-5.
     'process-6-clean' => ['file' => 'process-6-clean.jpg', 'alt' => 'Clean and sanitize'],
     'process-7-repair' => ['file' => 'process-7-repair.jpg', 'alt' => 'Repair and rebuild'],
     // Rebuild 2026-11-12 — 15 new routes. Slots are added here up front;
