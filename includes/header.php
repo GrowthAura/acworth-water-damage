@@ -12,12 +12,16 @@ global $SITE, $SERVICES, $AREAS;
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?= esc($HEAD['title']) ?></title>
 <meta name="description" content="<?= esc($HEAD['description']) ?>">
-<meta name="robots" content="index, follow">
+<meta name="robots" content="<?= esc($HEAD['robots'] ?? 'index, follow') ?>">
+<?php if (!empty($HEAD['canonical'])): ?>
 <link rel="canonical" href="<?= esc($HEAD['canonical']) ?>">
+<?php endif; ?>
 <meta property="og:type" content="<?= esc($HEAD['og_type'] ?? 'website') ?>">
 <meta property="og:title" content="<?= esc($HEAD['title']) ?>">
 <meta property="og:description" content="<?= esc($HEAD['description']) ?>">
+<?php if (!empty($HEAD['canonical'])): ?>
 <meta property="og:url" content="<?= esc($HEAD['canonical']) ?>">
+<?php endif; ?>
 <meta property="og:site_name" content="<?= esc($SITE['brand']) ?>">
 <?php if (!empty($HEAD['og_image'])): ?>
 <meta property="og:image" content="<?= esc($HEAD['og_image']) ?>">

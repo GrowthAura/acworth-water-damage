@@ -14,7 +14,12 @@ $__slug = $currentSlug ?? '/';
 $__type = isset($PAGES[$__slug]) ? ($PAGES[$__slug]['type'] ?? '') : '';
 $__hasForm = ($__slug === '/') || in_array($__type, ['service', 'contact', 'area', 'area-hub', 'about', 'resource'], true);
 $__formTarget = $__hasForm ? '#request-service' : '/#request-service';
-$__formLabel = ($__slug === '/contact') ? 'Send a Message' : 'Request Emergency Help';
+// DEEP FIX 2026-11-14 (P3-10): the footer Get Help button uses the
+// page's own Button 2 text ($btn2, set by render_page from the page's
+// doc data) so every Button 2 on the page matches. Homepage/contact
+// fall back to the defaults ($btn2 is unset on the homepage; the
+// contact page keeps 'Send a Message').
+$__formLabel = ($__slug === '/contact') ? 'Send a Message' : ($btn2 ?? 'Request Emergency Help');
 $map_src = 'https://www.google.com/maps?q=' . rawurlencode($SITE['map_query']) . '&output=embed';
 ?>
 </main>

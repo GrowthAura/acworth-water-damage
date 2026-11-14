@@ -616,6 +616,13 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{
   text-decoration-thickness:1.5px;
 }
 .content-block a:hover{text-decoration-thickness:2px}
+/* DEEP FIX 2026-11-14 (P3-11): list-item links rendered 21px tall, under
+   the WCAG 2.2 AA 24px minimum (121 <li> + ~9 <dd> links sitewide).
+   inline-block + a 24px line-height makes every <li>/<dd> link at least
+   24px tall — the same pattern as the 2026-11-13 breadcrumb fix
+   (.crumbs a). Inline paragraph links are untouched (carried Chain 2
+   design decision); header/footer/nav links are untouched. */
+main li a, main dd a{display:inline-block;min-height:24px;line-height:24px}
 
 /* ---------- 11. Mobile menu: open state + scroll containment ---------- */
 .mobile-menu-wrap[open] summary{

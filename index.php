@@ -94,7 +94,12 @@ http_response_code(404);
 $HEAD = [
     'title' => 'Page Not Found | ' . $SITE['brand'],
     'description' => 'The page you asked for is not here. Call ' . $SITE['phone'] . ' for 24/7 emergency water damage help in Acworth, GA 30101 and 30102.',
-    'canonical' => site_url('/'),
+    // DEEP FIX 2026-11-14 (P1-1/P2-1/P2-2): a 404 carries noindex and NO
+    // homepage canonical/og:url — a 404 must never canonicalize to the
+    // homepage (soft-404 signal). header.php omits both tags when
+    // canonical is empty. Normal pages are untouched.
+    'robots' => 'noindex, follow',
+    'canonical' => null,
     'og_type' => 'website',
     // P3-6: error pages carry no business JSON-LD.
 ];
@@ -134,12 +139,17 @@ function call_strip() {
         '</div></section>';
 }
 
-function final_cta_compact($formTarget = '#request-service', $withForm = false, $form = null) {
+function final_cta_compact($formTarget = '#request-service', $withForm = false, $form = null, $btn2 = 'Request Emergency Help', $showH2 = true) {
     global $FINAL_CTA_H2, $FINAL_CTA_PARAS, $ROOT;
     $out = '<section class="final-cta"><div class="container"><div class="final-cta-card">';
-    $out .= '<h2>' . esc($FINAL_CTA_H2) . '</h2>';
+    // DEEP FIX 2026-11-14 (P3-1/P3-2): $showH2 is false when the page's
+    // last content H2 already is the final-CTA H2 — the shared heading is
+    // then not rendered twice. No doc words change either way.
+    if ($showH2) $out .= '<h2>' . esc($FINAL_CTA_H2) . '</h2>';
     $out .= '<p>' . esc($FINAL_CTA_PARAS[0]) . '</p>';
-    $out .= hero_buttons($formTarget);
+    // DEEP FIX 2026-11-14 (P3-10): the final CTA uses the page's own
+    // Button 2 text ($btn2) so hero and final CTA match on every page.
+    $out .= hero_buttons($formTarget, $btn2);
     $out .= '</div>';
     // AZ P2-5: pages with no hero form convert in place — the compact
     // final CTA carries the same compact lead form the service hero does.
@@ -235,7 +245,7 @@ function render_home($form = null) {
   <div class="phase-grid">
     <?php foreach ($PROCESS_STEPS as $i => $s): $pimg = page_img('process-' . ($i + 1), 'img'); ?>
     <div class="phase-card">
-      <?php if ($pimg): ?><div class="phase-media"><?= img_tag($pimg, 1200, 675, 'lazy', '(max-width: 700px) 348px, 193px') ?></div><?php else: ?><div class="phase-media phase-media--empty" aria-hidden="true"></div><?php endif; ?>
+      <?php if ($pimg): ?><div class="phase-media"><?= img_tag($pimg, 1200, 675, 'lazy', '(max-width: 700px) 348px, 230px') ?></div><?php else: ?><div class="phase-media phase-media--empty" aria-hidden="true"></div><?php endif; ?>
       <p class="step-title"><?= ($i + 1) ?>. <?= esc($s['label']) ?></p><p><?= esc($s['text']) ?></p>
     </div>
     <?php endforeach; ?>
@@ -304,12 +314,12 @@ function render_home($form = null) {
   <?= render_para($AREAS_HUB_LINE, '/') ?>
   <div class="area-strip">
     <?php foreach ($AREAS as $a): $aimg = page_img($a['slug'], 'card'); ?>
-    <a class="area-card-link" href="<?= esc($a['slug']) ?>">
+    <div class="area-card-link">
       <div class="area-card">
-        <?php if ($aimg): ?><?= img_tag($aimg, 1200, 675, 'lazy', '(max-width: 700px) 165px, 154px') ?><?php endif; ?>
+        <?php if ($aimg): ?><?= img_tag($aimg, 1200, 675, 'lazy', '(max-width: 700px) 165px, 184px') ?><?php endif; ?>
         <span><?= esc($a['city']) ?>, GA</span>
       </div>
-    </a>
+    </div>
     <?php endforeach; ?>
   </div>
 </div></section>
@@ -338,7 +348,7 @@ function render_home($form = null) {
 }
 
 function render_page($slug, $page, $form = null) {
-    global $ROOT, $SITE, $HOME_META, $PAGES, $AREAS;
+    global $ROOT, $SITE, $HOME_META, $PAGES, $AREAS, $FINAL_CTA_H2;
     $meta = page_meta($slug, $PAGES);
     $type = $page['type'];
     $isContact = ($slug === '/contact');
@@ -398,15 +408,13 @@ function render_page($slug, $page, $form = null) {
     elseif ($slug === '/water-damage-insurance-claim-acworth-ga') $howtoExtra = howto_claim_process($page['blocks'] ?? []);
     if ($howtoExtra) $graph[] = ld_howto($howtoExtra['name'], $howtoExtra['description'], $howtoExtra['steps'], $slug);
     $pageHero = page_img($slug, 'hero');
-    // SEO FIX 2026-11-13 (P2-3): DOCUMENTED og:image fallback. The 4 pages
-    // with no hero image (water-mitigation, crawl-space, ceiling, hardwood)
-    // use the homepage hero as their og:image + twitter:image so social
-    // shares still render a preview (twitter:card stays summary_large_image
-    // via header.php). This is a meta-only fallback — NO per-page image is
-    // invented and the image slots themselves stay open for the image team.
-    // The sitemap does NOT carry this fallback (image entries list only a
-    // page's own hero).
-    $ogHero = $pageHero ?: page_img('/', 'hero');
+    // DEEP FIX 2026-11-14 (P3-5): NO og:image fallback. The 4 pages with
+    // no hero image (water-mitigation, crawl-space, ceiling, hardwood)
+    // carry no og:image (and twitter:card falls back to summary in
+    // header.php) — a share preview must not show a photo that is not on
+    // the page. The sitemap already omits image:loc for them. The old
+    // homepage-hero fallback is removed.
+    $ogHero = $pageHero;
     $HEAD = [
         'title' => $meta['title'],
         'description' => $meta['description'],
@@ -424,6 +432,14 @@ function render_page($slug, $page, $form = null) {
     $withForm = in_array($type, ['area', 'area-hub', 'about', 'resource'], true);
     $formTarget = ($isService || $isContact || $withForm) ? '#request-service' : '/#request-service';
     $btn2 = $page['buttons']['b2'] ?? 'Request Emergency Help';
+    // DEEP FIX 2026-11-14 (P3-1/P3-2): if the page's last content H2 is
+    // already the final-CTA H2, the shared CTA heading is suppressed so
+    // the heading appears once. Doc words unchanged.
+    $lastH2 = null;
+    foreach ($page['blocks'] ?? [] as $b) {
+        if (($b['kind'] ?? '') === 'h2') $lastH2 = $b['text'];
+    }
+    $showCtaH2 = ($lastH2 !== $FINAL_CTA_H2);
     $eyebrow = $page['eyebrow'] ?? $HOME_META['eyebrow'];
     require $ROOT . '/includes/header.php';
     if ($isService):
@@ -469,20 +485,19 @@ function render_page($slug, $page, $form = null) {
   <?php if ($type === 'area-hub'): ?>
     <div class="area-strip">
       <?php foreach ($AREAS as $a): $aimg = page_img($a['slug'], 'card'); ?>
-      <a class="area-card-link" href="<?= esc($a['slug']) ?>">
+      <div class="area-card-link">
         <div class="area-card">
-          <?php if ($aimg): ?><?= img_tag($aimg, 1200, 675, 'lazy', '(max-width: 700px) 165px, 154px') ?><?php endif; ?>
+          <?php if ($aimg): ?><?= img_tag($aimg, 1200, 675, 'lazy', '(max-width: 700px) 165px, 184px') ?><?php endif; ?>
           <span><?= esc($a['city']) ?>, GA</span>
         </div>
-      </a>
+      </div>
       <?php endforeach; ?>
     </div>
   <?php endif; ?>
-  <p class="back-home"><a href="/">Back to home</a></p>
 </div></section>
 <?= call_strip() ?>
 <?php if (!$isContact): ?>
-<?= final_cta_compact($formTarget, $withForm, $form) ?>
+<?= final_cta_compact($formTarget, $withForm, $form, $btn2, $showCtaH2) ?>
 <?php endif; ?>
 <?php
     require $ROOT . '/includes/footer.php';

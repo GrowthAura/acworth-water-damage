@@ -22,7 +22,10 @@ $IMG = '/assets/img/';
 // Slot definitions: file (without path) + alt text.
 $MEDIA = [
     'hero' => ['file' => 'hero-acworth-water-damage.jpg',
-        'alt' => 'Water damage restoration crew at work in an Acworth, GA home'],
+        // DEEP FIX 2026-11-14 (P3-9): honest alt. The photo is a flooded
+        // road with speed-limit signs standing in the water — no crew, no
+        // home. No place is claimed (the road's town is not verifiable).
+        'alt' => 'Floodwater covering a road, with speed limit signs standing in the water'],
     'svc-emergency-water-extraction' => ['file' => 'svc-emergency-water-extraction.jpg',
         'alt' => 'Emergency Water Extraction in Acworth'],
     'svc-flood-damage-restoration' => ['file' => 'svc-flood-damage-restoration.jpg',
@@ -50,7 +53,11 @@ $MEDIA = [
     'svc-commercial-water-damage' => ['file' => 'svc-commercial-water-damage.jpg',
         'alt' => 'Commercial Water Damage in Acworth'],
     'svc-lake-allatoona' => ['file' => 'svc-lake-allatoona.jpg',
-        'alt' => 'Lake Allatoona Lake Home Water Damage'],
+        // DEEP FIX 2026-11-14 (P3-9 audit): honest alt. The photo shows
+        // lakeside homes with docks — a mountain ridge and palm are
+        // visible, and no water damage. It does not show Lake Allatoona.
+        // (The photo itself is the carried P2-5 wrong-place item.)
+        'alt' => 'Lakeside homes with docks along the water'],
     'svc-insurance-claim' => ['file' => 'svc-insurance-claim.jpg',
         'alt' => 'Water Damage Insurance Claim Help in Acworth'],
     'area-kennesaw' => ['file' => 'area-kennesaw.jpg',
@@ -92,9 +99,17 @@ $MEDIA = [
     'res-leak-credit' => ['file' => 'res-leak-credit.jpg',
         'alt' => 'Cobb County Water Leak Credit After a Burst Pipe: What to Save'],
     'res-lake-high-water' => ['file' => 'res-lake-high-water.jpg',
-        'alt' => 'Lake Allatoona High Water: A Basement Checklist for Acworth Homes'],
+        'alt' => 'Lake Allatoona High Water: A Basement Checklist for Acworth Homes',
+        // DEEP FIX 2026-11-14 (P3-8): the flooded pier/dock (the subject)
+        // sits at the bottom of the frame; the 422px cover crop kept only
+        // a sliver of it. 85% keeps the cabins and most of the pier.
+        'pos' => '50% 85%'],
     'res-musty-basement' => ['file' => 'res-musty-basement.jpg',
-        'alt' => 'Musty Basement Smell? 7 Hidden Water Damage Signs to Check'],
+        'alt' => 'Musty Basement Smell? 7 Hidden Water Damage Signs to Check',
+        // DEEP FIX 2026-11-14 (P3-8): the damp stains at the wall base and
+        // the wet floor (the subject) sit at the bottom of the frame; the
+        // center crop cut them. Bottom-anchored crop keeps them in frame.
+        'pos' => '50% 100%'],
     'res-frozen-pipe' => ['file' => 'res-frozen-pipe.jpg',
         'alt' => 'Freezing Nights in Acworth: How to Stop Attic, Crawl Space & Lake-Home Pipe Bursts'],
     'res-restoration-cost' => ['file' => 'res-restoration-cost.jpg',
@@ -102,9 +117,16 @@ $MEDIA = [
     'res-first-24-hours' => ['file' => 'res-first-24-hours.jpg',
         'alt' => 'Water Damage in Your Acworth Home: The First 24 Hours Checklist'],
     'about-team' => ['file' => 'about-team.jpg',
-        'alt' => 'About Our Acworth Water Damage Restoration Team'],
+        // DEEP FIX 2026-11-14 (P3-9 audit): honest alt. The photo shows a
+        // construction crew pouring concrete on a roof slab — not a water
+        // damage crew and not this business's team. (The photo itself is
+        // the carried P2-3 wrong-service item.)
+        'alt' => 'Construction workers in hard hats and high-visibility vests working on a concrete roof slab'],
     'contact-crew' => ['file' => 'contact-crew.jpg',
-        'alt' => 'Contact Our 24/7 Acworth Water Damage Crew'],
+        // DEEP FIX 2026-11-14 (P3-9 audit): honest alt. The photo is a
+        // generic call-centre stock photo (headset agents at desks), not
+        // this business's crew.
+        'alt' => 'Customer service representatives with headsets answering calls at their desks'],
 ];
 
 // Page -> slot map. Built from the data arrays so a slug can never point
@@ -186,7 +208,7 @@ function page_img($slug, $kind) {
     if (!is_file($disk)) return null;
     $dims = img_real_dims($entry['file']);
     return ['src' => $IMG . $entry['file'], 'alt' => $entry['alt'], 'file' => $entry['file'],
-        'w' => $dims[0], 'h' => $dims[1]];
+        'w' => $dims[0], 'h' => $dims[1], 'pos' => $entry['pos'] ?? null];
 }
 
 // ---- SEO FIX 2026-11-13 (P2-1 slot-fit variants + P3-19 real dims) ------
@@ -224,12 +246,18 @@ function img_srcset($img, $widths) {
 
 // Hero <img>: real dimensions + srcset. $extra carries fetchpriority etc.
 // sizes: hero renders full viewport width on mobile, 1280px on desktop.
+// DEEP FIX 2026-11-14 (P3-7): srcset is now [360, 560, 800, original] —
+// the 360/560 variants already existed on disk for every hero file (same
+// pipeline as the card variants); the hero tag just never offered them.
+// DEEP FIX 2026-11-14 (P3-8): 'pos' (per-image object-position) is
+// emitted as an inline style when the slot defines one.
 function hero_img_tag($img, $extra = '') {
     if (!$img) return '';
+    $style = !empty($img['pos']) ? ' style="object-position: ' . esc($img['pos']) . '"' : '';
     return '<img src="' . esc($img['src']) . '" alt="' . esc($img['alt']) . '"' .
         ' width="' . (int) $img['w'] . '" height="' . (int) $img['h'] . '"' .
-        ' srcset="' . img_srcset($img, [800]) . '"' .
-        ' sizes="(max-width: 700px) 100vw, 1280px"' .
+        ' srcset="' . img_srcset($img, [360, 560, 800]) . '"' .
+        ' sizes="(max-width: 700px) 100vw, 1280px"' . $style .
         ($extra !== '' ? ' ' . $extra : '') . '>';
 }
 
@@ -238,7 +266,7 @@ function img_tag($img, $w, $h, $loading = 'lazy', $sizes = '') {
     // SEO FIX 2026-11-13 (P3-19/P3-5): $w/$h are kept for signature
     // compatibility but the REAL file dimensions are emitted instead —
     // the old hardcoded 1200x675 did not match the 1600x900 files.
-    // $sizes is the slot's rendered width, e.g. "(max-width: 700px) 348px, 263px".
+    // $sizes is the slot's rendered width, e.g. "(max-width: 700px) 348px, 313px".
     $rw = (int) ($img['w'] ?? $w);
     $rh = (int) ($img['h'] ?? $h);
     $out = '<img src="' . esc($img['src']) . '" alt="' . esc($img['alt']) . '" width="' . $rw .
