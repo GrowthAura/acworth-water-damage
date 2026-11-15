@@ -1,7 +1,16 @@
 <?php
 // Acworth Water Damage — image map.
-// 26 of 32 original slots filled. 6 slots have no fitting Pexels photo and
-// were removed from $MEDIA (flagged, see qa/IMAGE-REPORT.md): svc-water-mitigation,
+// GENERATED-IMAGE ROUND 2026-11-15: the 6 slots below were filled with
+// OUR OWN generated images (media pipeline, photorealistic, competitor-
+// inspired subjects only — no competitor photo copied, no stock source:
+// no Pexels/Openverse/Wikimedia/Unsplash). See
+// qa/second-source-images-2026-11-15.md + qa/IMAGE-LOG. The old roof
+// photo (Pexels 9431615) was replaced the same round; the original is
+// backed up in qa/second-source-tmp/backup/.
+// 26 of 32 original slots filled. 6 slots had no fitting Pexels photo and
+// had been removed from $MEDIA (flagged, see qa/IMAGE-REPORT.md) until the
+// 2026-11-15 generated-image round restored them (see note above):
+// svc-water-mitigation,
 // svc-ceiling-water-damage, svc-hardwood-floor, svc-crawl-space,
 // process-5-drying, and process-4-extraction (removed 2026-11-14: Pexels
 // 6195273 is Lancaster's photo, live on the Lancaster homepage — see
@@ -39,7 +48,22 @@ $MEDIA = [
     'svc-mold-remediation' => ['file' => 'svc-mold-remediation.jpg',
         'alt' => 'Mold Remediation in Acworth'],
     'svc-storm-roof-leak' => ['file' => 'svc-storm-roof-leak.jpg',
+        // GENERATED 2026-11-15: replaced Pexels 9431615 (flat grey slate/
+        // tile roof, European cues). Generated US roofers installing
+        // brown-gray architectural asphalt shingles on a pitched roof of
+        // a US suburban house. See qa/second-source-images-2026-11-15.md.
         'alt' => 'Storm & Roof Leak Water Damage in Acworth'],
+    // GENERATED 2026-11-15 (own generated images, see report): the 4
+    // service slots that had no fitting stock photo. Each feeds its
+    // homepage card AND its service-page hero (same slot, $PAGE_IMG).
+    'svc-water-mitigation' => ['file' => 'svc-water-mitigation.jpg',
+        'alt' => 'Water Mitigation & Structural Drying in Acworth'],
+    'svc-crawl-space' => ['file' => 'svc-crawl-space.jpg',
+        'alt' => 'Crawl Space Water Removal in Acworth'],
+    'svc-ceiling-water-damage' => ['file' => 'svc-ceiling-water-damage.jpg',
+        'alt' => 'Ceiling Water Damage Repair in Acworth'],
+    'svc-hardwood-floor' => ['file' => 'svc-hardwood-floor.jpg',
+        'alt' => 'Hardwood Floor Water Damage in Acworth'],
     'svc-water-heater-leak' => ['file' => 'svc-water-heater-leak.jpg',
         'alt' => 'Water Heater Leak Cleanup in Acworth'],
     'svc-appliance-leak' => ['file' => 'svc-appliance-leak.jpg',
@@ -53,11 +77,11 @@ $MEDIA = [
     'svc-commercial-water-damage' => ['file' => 'svc-commercial-water-damage.jpg',
         'alt' => 'Commercial Water Damage in Acworth'],
     'svc-lake-allatoona' => ['file' => 'svc-lake-allatoona.jpg',
-        // DEEP FIX 2026-11-14 (P3-9 audit): honest alt. The photo shows
-        // lakeside homes with docks — a mountain ridge and palm are
-        // visible, and no water damage. It does not show Lake Allatoona.
-        // (The photo itself is the carried P2-5 wrong-place item.)
-        'alt' => 'Lakeside homes with docks along the water'],
+        // PENDING-CALLS 2026-11-15 (item 2): replaced — Pexels 31006674,
+        // a Georgia lake with a boathouse and docks (no mountains, no
+        // palms). Alt describes the photo; it does not claim the photo
+        // is Lake Allatoona itself.
+        'alt' => 'A lake in Georgia with a boathouse and docks along the shore'],
     'svc-insurance-claim' => ['file' => 'svc-insurance-claim.jpg',
         'alt' => 'Water Damage Insurance Claim Help in Acworth'],
     'area-kennesaw' => ['file' => 'area-kennesaw.jpg',
@@ -75,8 +99,12 @@ $MEDIA = [
     'process-1-dispatch' => ['file' => 'process-1-dispatch.jpg', 'alt' => 'Dispatch'],
     'process-2-stop-source' => ['file' => 'process-2-stop-source.jpg', 'alt' => 'Stop the source'],
     'process-3-inspect' => ['file' => 'process-3-inspect.jpg', 'alt' => 'Inspect and map moisture'],
-    // process-4-extraction REMOVED 2026-11-14 (Pexels 6195273 = Lancaster's
-    // photo). No $MEDIA entry: the step renders the empty band, like process-5.
+    // GENERATED 2026-11-15: process-4-extraction + process-5-drying filled
+    // with own generated images (see qa/second-source-images-2026-11-15.md).
+    // process-4 was removed 2026-11-14 (Pexels 6195273 = Lancaster's photo);
+    // the generated replacement is a different scene, not that photo.
+    'process-4-extraction' => ['file' => 'process-4-extraction.jpg', 'alt' => 'Water extraction'],
+    'process-5-drying' => ['file' => 'process-5-drying.jpg', 'alt' => 'Structural drying'],
     'process-6-clean' => ['file' => 'process-6-clean.jpg', 'alt' => 'Clean and sanitize'],
     'process-7-repair' => ['file' => 'process-7-repair.jpg', 'alt' => 'Repair and rebuild'],
     // Rebuild 2026-11-12 — 15 new routes. Slots are added here up front;
