@@ -15,6 +15,22 @@
   font-family:"Fraunces";font-style:normal;font-weight:400 700;font-display:swap;
   src:url(/assets/fonts/fraunces-latin.woff2) format("woff2");
 }
+/* AMP FIX 2026-11-15: Fraunces' DEFAULT & glyph is the ornate circled
+   swash (its GSUB has only liga + rvrn ampersand->ampersand.alt, and
+   Chromium applies neither rvrn 0 nor rvrn 1 for Latin — verified in a
+   real render: both leave the swash in place). So the & is served from
+   Inter instead, via a separate family that covers ONLY U+0026 and sits
+   FIRST in --font-display: per-character fallback then uses Inter for &
+   and Fraunces for every other heading character. A same-family
+   unicode-range override was tested 4 ways and does NOT work in
+   Chromium: when faces share a family name the unrestricted face wins
+   the whole run and the U+0026 face never even loads (see
+   qa/amp-fix-2026-11-15/NOTE.md). No word, size, colour or weight
+   changes; Inter is already loaded for body text, so no extra fetch. */
+@font-face{
+  font-family:"FrauncesAmp";font-style:normal;font-weight:400 800;font-display:swap;
+  src:url(/assets/fonts/inter-latin.woff2) format("woff2");unicode-range:U+0026;
+}
 @font-face{
   font-family:"Inter";font-style:normal;font-weight:400 800;font-display:swap;
   src:url(/assets/fonts/inter-latin.woff2) format("woff2");
@@ -42,7 +58,7 @@
   --shadow-lg:0 34px 90px rgba(7,21,39,.20);
   --shadow-blue:0 16px 44px rgba(8,105,156,.28);
   --header-h:78px;
-  --font-display:"Fraunces",Georgia,"Times New Roman",serif;
+  --font-display:"FrauncesAmp","Fraunces",Georgia,"Times New Roman",serif;
   --font-body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
   --maxw:1280px;
   --maxw-wide:1400px;
