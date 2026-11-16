@@ -172,14 +172,18 @@ function call_strip() {
         '</div></section>';
 }
 
-function final_cta_compact($formTarget = '#request-service', $withForm = false, $btn2 = 'Request Emergency Help', $showH2 = true, $slug = '/') {
+function final_cta_compact($formTarget = '#request-service', $withForm = false, $btn2 = 'Request Emergency Help', $showH2 = false, $slug = '/', $showPara = false) {
     global $FINAL_CTA_H2, $FINAL_CTA_PARAS, $ROOT;
     $out = '<section class="final-cta"><div class="container"><div class="final-cta-card">';
-    // DEEP FIX 2026-11-14 (P3-1/P3-2): $showH2 is false when the page's
-    // last content H2 already is the final-CTA H2 — the shared heading is
-    // then not rendered twice. No doc words change either way.
+    // FINAL-CTA FIX 2026-11-16: the card's H2 / paragraph render only
+    // when the caller passes $showH2 / $showPara — i.e. only when the
+    // page's own tab contains that exact string AND the body has not
+    // already shown it. Defaults are off (no template words unless a
+    // caller opts in with a data-driven reason). render_page passes
+    // false for both; render_home prints the homepage tab's own words
+    // inline instead of calling this function.
     if ($showH2) $out .= '<h2>' . esc($FINAL_CTA_H2) . '</h2>';
-    $out .= '<p>' . esc($FINAL_CTA_PARAS[0]) . '</p>';
+    if ($showPara) $out .= '<p>' . esc($FINAL_CTA_PARAS[0]) . '</p>';
     // DEEP FIX 2026-11-14 (P3-10): the final CTA uses the page's own
     // Button 2 text ($btn2) so hero and final CTA match on every page.
     $out .= hero_buttons($formTarget, $btn2);
@@ -371,6 +375,9 @@ function render_home() {
   </div>
 </div></section>
 <?= call_strip() ?>
+<?php // FINAL-CTA FIX 2026-11-16: this H2 + paragraph ARE the homepage
+   // tab's own last two blocks (tabs-parsed.json tab 1) — the homepage
+   // renders them nowhere else, so they appear exactly once, here. ?>
 <section class="final-cta"><div class="container"><div class="final-cta-card">
   <h2><?= esc($FINAL_CTA_H2) ?></h2>
   <?php foreach ($FINAL_CTA_PARAS as $p): ?><p><?= esc($p) ?></p><?php endforeach; ?>
@@ -384,7 +391,7 @@ function render_home() {
 }
 
 function render_page($slug, $page) {
-    global $ROOT, $SITE, $HOME_META, $PAGES, $AREAS, $FINAL_CTA_H2;
+    global $ROOT, $SITE, $HOME_META, $PAGES, $AREAS;
     $meta = page_meta($slug, $PAGES);
     $type = $page['type'];
     $isContact = ($slug === '/contact');
@@ -468,14 +475,20 @@ function render_page($slug, $page) {
     $withForm = in_array($type, ['area', 'area-hub', 'about', 'resource'], true);
     $formTarget = ($isService || $isContact || $withForm) ? '#request-service' : '/#request-service';
     $btn2 = $page['buttons']['b2'] ?? 'Request Emergency Help';
-    // DEEP FIX 2026-11-14 (P3-1/P3-2): if the page's last content H2 is
-    // already the final-CTA H2, the shared CTA heading is suppressed so
-    // the heading appears once. Doc words unchanged.
-    $lastH2 = null;
-    foreach ($page['blocks'] ?? [] as $b) {
-        if (($b['kind'] ?? '') === 'h2') $lastH2 = $b['text'];
-    }
-    $showCtaH2 = ($lastH2 !== $FINAL_CTA_H2);
+    // DEEP FIX 2026-11-14 (P3-1/P3-2), generalised FINAL-CTA FIX
+    // 2026-11-16: the final CTA's WORDS (H2 + paragraph) come only from
+    // the page's own tab, and only when the body has not already shown
+    // them. render_blocks() below renders EVERY block, so any tab CTA
+    // word (the H2 on the cost / first-24-hours tabs, the city-specific
+    // closing paragraphs on Kennesaw / Dallas) is already on the page
+    // and the card must not repeat it — and any word the tab does NOT
+    // contain is not doc content here and must not be added. Both card
+    // copies are therefore off on every render_page page: derived from
+    // the page's own blocks and the render flow, never from a slug list.
+    // (The homepage is the exception: render_home renders no blocks, so
+    // its tab CTA words live in the card — see render_home.)
+    $showCtaH2 = false;
+    $showCtaPara = false;
     $eyebrow = $page['eyebrow'] ?? $HOME_META['eyebrow'];
     require $ROOT . '/includes/header.php';
     if ($isService):
@@ -533,7 +546,7 @@ function render_page($slug, $page) {
 </div></section>
 <?= call_strip() ?>
 <?php if (!$isContact): ?>
-<?= final_cta_compact($formTarget, $withForm, $btn2, $showCtaH2, $slug) ?>
+<?= final_cta_compact($formTarget, $withForm, $btn2, $showCtaH2, $slug, $showCtaPara) ?>
 <?php endif; ?>
 <?php
     require $ROOT . '/includes/footer.php';
