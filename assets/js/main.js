@@ -161,4 +161,63 @@
   }
   window.addEventListener('scroll', callbar, { passive: true });
   callbar();
+
+  // Lead + contact forms: POST straight to the Google Sheets webhook
+  // (Apps Script, bound to the "Acworth Water Damage - Website Leads"
+  // sheet) from the browser. The script logs one row + emails the owner.
+  // The fetch uses mode 'no-cors' (San Bruno pattern, proven live): the
+  // webhook answers with a redirect page, and a normal CORS fetch fails
+  // on that redirect even though the lead already landed (row + email) —
+  // the visitor saw the failure message for a lead that WAS saved. With
+  // no-cors the response is opaque, so there is no resp.ok to check —
+  // the fetch resolving means the POST was sent and the lead is in the
+  // Sheet; only a network failure shows the failure message. The result
+  // shows in #form-status in place; the form stays so another message
+  // can be sent.
+  ['lead-form', 'contact-form'].forEach(function (formId) {
+    var form = document.getElementById(formId);
+    if (!form) return;
+    var card = form.closest('.form-card');
+    var statusBox = card ? card.querySelector('#form-status') : document.getElementById('form-status');
+    var submitBtn = form.querySelector('button[type="submit"]');
+    var submitLabel = submitBtn ? submitBtn.textContent : '';
+    function showStatus(text, isError) {
+      if (!statusBox) return;
+      statusBox.hidden = false;
+      statusBox.setAttribute('role', isError ? 'alert' : 'status');
+      statusBox.innerHTML = '<p><strong>' + text + '</strong></p>';
+      statusBox.scrollIntoView({ block: 'nearest' });
+    }
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var data = new FormData(form);
+      var name = (data.get('name') || '').toString().trim();
+      var phone = (data.get('phone') || '').toString().trim();
+      var message = (data.get('message') || '').toString().trim();
+      if (!name || !phone || !message) {
+        showStatus('Please enter your name, phone number and what happened.', true);
+        return;
+      }
+      // Honeypot: bots fill the hidden "website" field. Answer success and
+      // send nothing, so the trap stays invisible.
+      if ((data.get('website') || '').toString().trim() !== '') {
+        showStatus('Thank you. Your message has been sent — we will call you back shortly. For immediate help, call (470) 672-2095.', false);
+        form.reset();
+        return;
+      }
+      if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Sending…'; }
+      fetch(form.action, {
+        method: 'POST',
+        mode: 'no-cors',
+        body: data
+      }).then(function () {
+        showStatus('Thank you. Your message has been sent — we will call you back shortly. For immediate help, call (470) 672-2095.', false);
+        form.reset();
+      }).catch(function () {
+        showStatus('Sorry — your message could not be sent. Please call (470) 672-2095 for immediate help. A crew is dispatched immediately.', true);
+      }).finally(function () {
+        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = submitLabel; }
+      });
+    });
+  });
 })();

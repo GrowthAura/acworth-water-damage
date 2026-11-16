@@ -184,11 +184,13 @@
       <div class="form-card form-card-compact" id="request-service">
   <p class="form-title">Request Emergency Help</p>
   <p>Fill this in and we will call you back. For immediate help, call <a href="tel:+14706722095">(470) 672-2095</a>.</p>
-      <form method="post" action="" novalidate>
+  <div class="form-note" id="form-status" role="status" hidden></div>
+  <form id="lead-form" method="post" action="https://script.google.com/macros/s/AKfycbykeOdfYOxJuQy4fCEp-j4ZVOT0PNkMsF1jXNcvZ-7Nyt05McwE_evid4cwPI4yq0SX3g/exec" novalidate>
+    <input type="hidden" name="return_url" value="https://www.acworthwaterdamagerestoration.us/mobile-home-water-damage-acworth-ga">
     <label for="f-name">Your name</label>
-    <input id="f-name" name="name" type="text" autocomplete="name" required maxlength="120" value="">
+    <input id="f-name" name="name" type="text" autocomplete="name" required maxlength="120">
     <label for="f-phone">Phone number</label>
-    <input id="f-phone" name="phone" type="tel" autocomplete="tel" required maxlength="40" value="">
+    <input id="f-phone" name="phone" type="tel" autocomplete="tel" required maxlength="40">
     <label for="f-service">What is happening?</label>
     <select id="f-service" name="service">
       <option value="">Select a service</option>
@@ -221,10 +223,11 @@
     </select>
     <label for="f-message">Tell us what happened</label>
     <textarea id="f-message" name="message" required maxlength="2000"></textarea>
+    <input type="hidden" name="page" value="https://www.acworthwaterdamagerestoration.us/mobile-home-water-damage-acworth-ga">
     <p class="hp-field" aria-hidden="true"><label>Leave this empty <input type="text" name="website" tabindex="-1" autocomplete="off" value=""></label></p>
     <button class="btn btn-navy" type="submit">Request Emergency Help</button>
   </form>
-  </div>
+</div>
     </div>
   </div>
 </section>
@@ -286,6 +289,6 @@
   <span aria-hidden="true">&#9742;</span><span>(470) 672-2095</span>
 </a>
 <div class="mobile-call-spacer" aria-hidden="true"></div>
-<script src="/assets/js/main.js?v=5" defer></script>
+<script src="/assets/js/main.js?v=6" defer></script>
 </body>
 </html>
