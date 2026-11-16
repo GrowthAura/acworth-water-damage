@@ -43,6 +43,65 @@
     });
   });
 
+  // MOBILE AUDIT 2026-11-16 (item F, P1 — Delaware scroll-trap fix).
+  // The menu panel is a 70vh scroll container with
+  // overscroll-behavior:contain, so a touch swipe starting inside it
+  // scrolls the panel and the page NEVER moves — the scroll-close
+  // handler below never fires. Two escapes, both leaving ordinary
+  // in-panel scrolls untouched:
+  // (a) backdrop tap-to-close — the .menu-backdrop sheet (a <header>
+  // sibling, shown while html.menu-open) eats taps outside the panel;
+  // (b) edge-swipe close — a swipe pushing PAST the panel's top edge
+  // (scrollTop 0, swiping down) or bottom edge (scrolled to the end,
+  // swiping up) closes the menu; the next swipe then scrolls the page.
+  // A 300ms guard stops the closing gesture's own touchend/click from
+  // re-toggling the hamburger summary.
+  var menuWrap = document.querySelector('.mobile-menu-wrap');
+  var menuPanel = document.querySelector('.mobile-menu');
+  var backdrop = document.querySelector('.menu-backdrop');
+  var guardUntil = 0;
+  function closeMenu() {
+    if (!menuWrap) return;
+    menuWrap.removeAttribute('open');
+    syncExpanded();
+  }
+  function syncMenuOpen() {
+    var open = !!(menuWrap && menuWrap.open);
+    document.documentElement.classList.toggle('menu-open', open);
+  }
+  if (menuWrap) {
+    menuWrap.addEventListener('toggle', syncMenuOpen);
+    syncMenuOpen();
+  }
+  if (backdrop) {
+    backdrop.addEventListener('click', function () { closeMenu(); });
+  }
+  if (menuWrap) {
+    menuWrap.querySelector('summary').addEventListener('click', function (e) {
+      if (Date.now() < guardUntil) e.preventDefault();
+    }, true);
+  }
+  if (menuPanel) {
+    var edgeStartY = 0, edgeStartTop = 0, edgeClosed = false;
+    menuPanel.addEventListener('touchstart', function (e) {
+      if (e.touches.length !== 1) return;
+      edgeStartY = e.touches[0].clientY;
+      edgeStartTop = menuPanel.scrollTop;
+      edgeClosed = false;
+    }, { passive: true });
+    menuPanel.addEventListener('touchmove', function (e) {
+      if (e.touches.length !== 1 || edgeClosed) return;
+      var dy = e.touches[0].clientY - edgeStartY;
+      var atTop = edgeStartTop <= 0;
+      var atBottom = edgeStartTop + menuPanel.clientHeight >= menuPanel.scrollHeight - 1;
+      if ((atTop && dy > 28) || (atBottom && dy < -28)) {
+        edgeClosed = true;
+        guardUntil = Date.now() + 300;
+        closeMenu();
+      }
+    }, { passive: true });
+  }
+
   // Close the mobile menu on scroll (standing rule: menu closes on scroll).
   window.addEventListener('scroll', function () {
     document.querySelectorAll('details.mobile-menu-wrap[open]').forEach(function (d) {
