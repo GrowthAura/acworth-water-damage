@@ -47,7 +47,7 @@ global $SITE, $SERVICES, $AREAS;
      is unused anywhere on the site, so no italic file is installed. -->
 <link rel="preload" href="/assets/fonts/fraunces-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/assets/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/assets/css/styles.css?v=15">
+<link rel="stylesheet" href="/assets/css/styles.css?v=16">
 <?php
 // SPEED INDEX / LCP FIX 2026-11-17: preload the page hero (the LCP image)
 // so the browser discovers it in the <head> instead of after parsing the

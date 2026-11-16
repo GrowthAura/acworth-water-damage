@@ -272,6 +272,25 @@ function img_srcset($img, $widths) {
     return implode(', ', $parts);
 }
 
+// WebP srcset for heroes (SPEED INDEX FIX 2026-11-17): mirrors img_srcset()
+// but serves .webp variants, topped by the 1280w WebP (from the original —
+// the hero slot renders at most 1280px wide, so no 1600w WebP is needed).
+function img_srcset_webp($img, $widths) {
+    if (!$img || empty($img['file'])) return '';
+    $stem = preg_replace('/\.jpg$/i', '', $img['file']);
+    $parts = [];
+    foreach ((array) $widths as $tw) {
+        $vfile = $stem . '-' . (int) $tw . 'w.webp';
+        if (!is_file(__DIR__ . '/../assets/img/variants/' . $vfile)) continue;
+        $parts[] = '/assets/img/variants/' . $vfile . ' ' . (int) $tw . 'w';
+    }
+    $v1280 = $stem . '-1280w.webp';
+    if (is_file(__DIR__ . '/../assets/img/variants/' . $v1280)) {
+        $parts[] = '/assets/img/variants/' . $v1280 . ' 1280w';
+    }
+    return implode(', ', $parts);
+}
+
 // Hero <img>: real dimensions + srcset. $extra carries fetchpriority etc.
 // sizes: hero renders full viewport width on mobile, 1280px on desktop.
 // DEEP FIX 2026-11-14 (P3-7): srcset is now [360, 560, 800, original] —
@@ -279,24 +298,37 @@ function img_srcset($img, $widths) {
 // pipeline as the card variants); the hero tag just never offered them.
 // DEEP FIX 2026-11-14 (P3-8): 'pos' (per-image object-position) is
 // emitted as an inline style when the slot defines one.
+// SPEED INDEX FIX 2026-11-17: wrapped in <picture> with a WebP <source>
+// (same widths + 1280w top) + the JPG <img> as fallback. Cards stay JPG.
 function hero_img_tag($img, $extra = '') {
     if (!$img) return '';
     $style = !empty($img['pos']) ? ' style="object-position: ' . esc($img['pos']) . '"' : '';
-    return '<img src="' . esc($img['src']) . '" alt="' . esc($img['alt']) . '"' .
+    $imgTag = '<img src="' . esc($img['src']) . '" alt="' . esc($img['alt']) . '"' .
         ' width="' . (int) $img['w'] . '" height="' . (int) $img['h'] . '"' .
         ' srcset="' . img_srcset($img, [360, 560, 800]) . '"' .
         ' sizes="(max-width: 700px) 100vw, 1280px"' . $style .
         ($extra !== '' ? ' ' . $extra : '') . '>';
+    $webp = img_srcset_webp($img, [360, 560, 800]);
+    if ($webp === '') return $imgTag; // no WebP on disk: plain JPG img
+    return '<picture><source type="image/webp" srcset="' . $webp .
+        '" sizes="(max-width: 700px) 100vw, 1280px">' . $imgTag . '</picture>';
 }
 
 // SPEED INDEX / LCP FIX 2026-11-17 (his order; PSI mobile Speed Index 4.0s,
 // the hero <img> is the LCP element and the browser only discovers it after
 // parsing the body): preload the page's hero image so the browser discovers
-// it in the <head>. imagesrcset / imagesizes MUST match hero_img_tag()
-// exactly, or the browser downloads the image twice. Returns '' when the
-// page has no hero (honestly empty by design).
+// it in the <head>. imagesrcset / imagesizes MUST match the <picture> WebP
+// <source> exactly (type="image/webp"), or the browser downloads the image
+// twice. When no WebP exists for a hero it falls back to the JPG srcset
+// (the pre-WebP behaviour). Returns '' when the page has no hero
+// (honestly empty by design).
 function hero_preload_tag($img) {
     if (!$img) return '';
+    $ss = img_srcset_webp($img, [360, 560, 800]);
+    if ($ss !== '') {
+        return '<link rel="preload" as="image" type="image/webp" imagesrcset="' . esc($ss) .
+            '" imagesizes="(max-width: 700px) 100vw, 1280px" fetchpriority="high">';
+    }
     $ss = img_srcset($img, [360, 560, 800]);
     if ($ss === '') return '';
     return '<link rel="preload" as="image" imagesrcset="' . esc($ss) .
