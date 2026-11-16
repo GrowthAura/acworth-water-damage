@@ -27,13 +27,21 @@ if ($path !== '/' && strlen($path) > 1 && str_ends_with($path, '/')) {
 // SEO FIX 2026-11-13 (P2-2): pages that have a hero image declare it as
 // <image:image><image:loc> (same URL as og:image). The 4 zero-image pages
 // carry no image entry — their slots are still open for the image team.
-// SITEMAP LASTMOD 2026-11-16: three REAL push-history dates, not one
-// identical stamp on all 41 URLs (mass-content signal). 2026-11-16 =
-// homepage + 10 most important services (the 7 footer services + the
-// first 3 remaining services in $SERVICES order); 2026-11-15 = the
-// remaining 15 services; everything else defaults to 2026-11-14
-// (5 areas + /locations hub + 7 resources + /about + /contact).
-// Counts: 11 + 15 + 15 = 41.
+// SITEMAP LASTMOD 2026-11-17 (his order 2026-11-17 ~00:45 PKT: "jo last
+// 7 pages hain un pr 11/17 krdena simple"): the LAST 7 URLs in sitemap
+// order (positions 35–41) move to 2026-11-17; everything else keeps its
+// date. 2026-11-16 = homepage + 10 most important services; 2026-11-15
+// = the remaining 15 services; everything else defaults to 2026-11-14
+// (5 areas + /locations hub + 2 resources + /about + /contact were 15;
+// 7 moved out, 8 remain). Counts: 7 + 11 + 15 + 8 = 41.
+$SITEMAP_LASTMOD_2026_11_17 = [
+    '/resources/lake-allatoona-high-water-basement',
+    '/resources/musty-basement-water-damage-signs',
+    '/resources/acworth-frozen-pipe-prevention',
+    '/resources/water-damage-restoration-cost-acworth',
+    '/resources/water-damage-first-24-hours',
+    '/about',
+    '/contact'];
 $SITEMAP_LASTMOD_2026_11_16 = ['/',
     '/emergency-water-extraction-acworth-ga',
     '/water-mitigation-acworth-ga',
@@ -68,8 +76,9 @@ if ($path === '/sitemap.xml') {
     $all = array_merge(['/'], array_keys($PAGES));
     foreach ($all as $slug) {
         $hero = page_img($slug, 'hero');
-        $lastmod = in_array($slug, $SITEMAP_LASTMOD_2026_11_16, true) ? '2026-11-16'
-            : (in_array($slug, $SITEMAP_LASTMOD_2026_11_15, true) ? '2026-11-15' : '2026-11-14');
+        $lastmod = in_array($slug, $SITEMAP_LASTMOD_2026_11_17, true) ? '2026-11-17'
+            : (in_array($slug, $SITEMAP_LASTMOD_2026_11_16, true) ? '2026-11-16'
+            : (in_array($slug, $SITEMAP_LASTMOD_2026_11_15, true) ? '2026-11-15' : '2026-11-14'));
         echo '  <url><loc>' . esc(site_url($slug)) . '</loc><lastmod>' . $lastmod . '</lastmod>';
         if ($hero) echo '<image:image><image:loc>' . esc(site_url($hero['src'])) . '</image:loc></image:image>';
         echo '</url>' . "\n";
