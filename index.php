@@ -13,7 +13,6 @@ require $ROOT . '/includes/lead-handler.php';
 $PAGES = build_pages();
 $SERVICES_BY_SLUG = [];
 foreach ($SERVICES as $s) $SERVICES_BY_SLUG[$s['slug']] = $s;
-$TODAY = date('Y-m-d');
 
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $rawPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
@@ -30,6 +29,40 @@ if ($path !== '/' && strlen($path) > 1 && str_ends_with($path, '/')) {
 // SEO FIX 2026-11-13 (P2-2): pages that have a hero image declare it as
 // <image:image><image:loc> (same URL as og:image). The 4 zero-image pages
 // carry no image entry — their slots are still open for the image team.
+// SITEMAP LASTMOD 2026-11-16: three REAL push-history dates, not one
+// identical stamp on all 41 URLs (mass-content signal). 2026-11-16 =
+// homepage + 10 most important services (the 7 footer services + the
+// first 3 remaining services in $SERVICES order); 2026-11-15 = the
+// remaining 15 services; everything else defaults to 2026-11-14
+// (5 areas + /locations hub + 7 resources + /about + /contact).
+// Counts: 11 + 15 + 15 = 41.
+$SITEMAP_LASTMOD_2026_11_16 = ['/',
+    '/emergency-water-extraction-acworth-ga',
+    '/water-mitigation-acworth-ga',
+    '/flood-damage-restoration-acworth-ga',
+    '/burst-pipe-water-damage-acworth-ga',
+    '/flooded-basement-cleanup-acworth-ga',
+    '/sewage-backup-cleanup-acworth-ga',
+    '/mold-remediation-acworth-ga',
+    '/crawl-space-water-removal-acworth-ga',
+    '/ceiling-water-damage-repair-acworth-ga',
+    '/storm-roof-leak-water-damage-acworth-ga'];
+$SITEMAP_LASTMOD_2026_11_15 = [
+    '/water-heater-leak-cleanup-acworth-ga',
+    '/appliance-leak-water-damage-acworth-ga',
+    '/ac-leak-water-damage-acworth-ga',
+    '/hardwood-floor-water-damage-acworth-ga',
+    '/carpet-water-damage-acworth-ga',
+    '/water-damage-repair-acworth-ga',
+    '/commercial-water-damage-acworth-ga',
+    '/lake-allatoona-water-damage',
+    '/water-damage-insurance-claim-acworth-ga',
+    '/mold-inspection-acworth-ga',
+    '/slab-leak-water-damage-acworth-ga',
+    '/townhome-water-damage-acworth-ga',
+    '/mobile-home-water-damage-acworth-ga',
+    '/rental-property-water-damage-acworth-ga',
+    '/fire-water-damage-acworth-ga'];
 if ($path === '/sitemap.xml') {
     header('Content-Type: application/xml; charset=utf-8');
     echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
@@ -37,7 +70,9 @@ if ($path === '/sitemap.xml') {
     $all = array_merge(['/'], array_keys($PAGES));
     foreach ($all as $slug) {
         $hero = page_img($slug, 'hero');
-        echo '  <url><loc>' . esc(site_url($slug)) . '</loc><lastmod>' . $TODAY . '</lastmod>';
+        $lastmod = in_array($slug, $SITEMAP_LASTMOD_2026_11_16, true) ? '2026-11-16'
+            : (in_array($slug, $SITEMAP_LASTMOD_2026_11_15, true) ? '2026-11-15' : '2026-11-14');
+        echo '  <url><loc>' . esc(site_url($slug)) . '</loc><lastmod>' . $lastmod . '</lastmod>';
         if ($hero) echo '<image:image><image:loc>' . esc(site_url($hero['src'])) . '</image:loc></image:image>';
         echo '</url>' . "\n";
     }
@@ -57,7 +92,8 @@ $MIME = [
 $isStatic = str_starts_with($path, '/assets/') ||
     in_array($path, ['/favicon.ico', '/favicon.svg', '/favicon-16x16.png', '/favicon-32x32.png',
         '/favicon-48x48.png', '/favicon-192x192.png', '/favicon-512x512.png',
-        '/apple-touch-icon.png', '/site.webmanifest', '/robots.txt', '/llms.txt'], true);
+        '/apple-touch-icon.png', '/site.webmanifest', '/robots.txt', '/llms.txt',
+        '/6aa940faa13a339621b16a5bd98b6d0f.txt'], true);
 if ($isStatic) {
     $file = $ROOT . $path;
     if (is_file($file)) {
