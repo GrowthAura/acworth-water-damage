@@ -289,6 +289,20 @@ function hero_img_tag($img, $extra = '') {
         ($extra !== '' ? ' ' . $extra : '') . '>';
 }
 
+// SPEED INDEX / LCP FIX 2026-11-17 (his order; PSI mobile Speed Index 4.0s,
+// the hero <img> is the LCP element and the browser only discovers it after
+// parsing the body): preload the page's hero image so the browser discovers
+// it in the <head>. imagesrcset / imagesizes MUST match hero_img_tag()
+// exactly, or the browser downloads the image twice. Returns '' when the
+// page has no hero (honestly empty by design).
+function hero_preload_tag($img) {
+    if (!$img) return '';
+    $ss = img_srcset($img, [360, 560, 800]);
+    if ($ss === '') return '';
+    return '<link rel="preload" as="image" imagesrcset="' . esc($ss) .
+        '" imagesizes="(max-width: 700px) 100vw, 1280px" fetchpriority="high">';
+}
+
 function img_tag($img, $w, $h, $loading = 'lazy', $sizes = '') {
     if (!$img) return '';
     // SEO FIX 2026-11-13 (P3-19/P3-5): $w/$h are kept for signature

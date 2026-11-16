@@ -48,6 +48,16 @@ global $SITE, $SERVICES, $AREAS;
 <link rel="preload" href="/assets/fonts/fraunces-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/assets/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/assets/css/styles.css?v=15">
+<?php
+// SPEED INDEX / LCP FIX 2026-11-17: preload the page hero (the LCP image)
+// so the browser discovers it in the <head> instead of after parsing the
+// body. $homeHero (homepage) / $pageHero (inner pages) are in scope from
+// index.php; the 404 branch sets neither, so no preload there.
+// imagesrcset/sizes match hero_img_tag() exactly (see hero_preload_tag) —
+// a mismatch would make the browser download the image twice.
+$__hero = $homeHero ?? $pageHero ?? null;
+echo hero_preload_tag($__hero);
+?>
 <?= $HEAD['ld'] ?? '' ?>
 <noscript><style>.reveal{opacity:1 !important;transform:none !important;}</style></noscript>
 </head>
