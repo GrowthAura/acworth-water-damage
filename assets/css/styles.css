@@ -42,6 +42,12 @@
   --ink-3:#1E3D57;
   --accent:#08699C;
   --accent-deep:#045A7E;
+  /* CSS ROUND 2026-11-16 (items D+E): new heading colours — H2 deep
+     pine-teal (cool), H3 burnt sienna (warm). Clearly different hues:
+     10.13:1 / 6.94:1 on white, 9.55:1 / 6.55:1 on warm paper #FBF8F2.
+     --ink-2 / --accent-deep stay for links, buttons, eyebrows etc. */
+  --h2-color:#0C4A42;
+  --h3-color:#9C3A0E;
   --accent-ink:#04344E;
   --accent-soft:#D9EDF7;
   --accent-faint:#ECF4F9;
@@ -64,14 +70,21 @@
   --maxw-wide:1400px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;overflow-x:hidden}
+/* MOBILE AUDIT 2026-11-16 (item F, P1): overflow-x:hidden on html+body
+   breaks position:sticky on .site-header (the html/body overflow makes
+   them scroll containers, so the sticky header scrolled away with the
+   page — measured top:-500 at scrollY 500, both 390px and 1280px).
+   overflow-x:clip clips the same horizontal overflow WITHOUT creating a
+   scroll container, so sticky works again and nothing can scroll sideways
+   (re-verified by the 41-route swipe probe after install). */
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;overflow-x:clip}
 body{
   font-family:var(--font-body);
   color:var(--text);
   background:var(--white);
   line-height:1.8;
-  font-size:18px;
-  overflow-x:hidden;
+  font-size:20px; /* CSS ROUND 2026-11-16 (item C): body copy 18px -> 20px */
+  overflow-x:clip;
   -webkit-font-smoothing:antialiased;
 }
 img{max-width:100%;height:auto;display:block}
@@ -86,15 +99,18 @@ h1,h2,h3,h4{
   color:var(--ink);
   letter-spacing:-.015em;
   font-weight:600;
-  text-wrap:balance;
+  text-wrap:balance; /* CSS ROUND 2026-11-16 (item D): text-wrap:pretty
+    TESTED + REVERTED same round — pretty made orphans 35 -> 302 in a
+    full 41-route x 3-width re-audit; balance stays, it is the best
+    global setting (see qa/css-text-headings-work-2026-11-16.md). */
 }
 h1{font-size:clamp(2.4rem,5.2vw,4.2rem);font-weight:560;letter-spacing:-.02em;text-wrap:balance}
-h2{font-size:clamp(2rem,3.6vw,2.9rem);margin-bottom:.55em;font-weight:580;text-wrap:balance;max-width:52ch;color:var(--ink-2)}
-h3{font-size:clamp(1.32rem,2.4vw,1.78rem);margin-bottom:.5em;font-weight:600;color:var(--accent-deep)}
+h2{font-size:clamp(2rem,3.6vw,2.9rem);margin-bottom:.55em;font-weight:580;text-wrap:balance;max-width:52ch;color:var(--h2-color)}
+h3{font-size:clamp(1.32rem,2.4vw,1.78rem);margin-bottom:.5em;font-weight:600;color:var(--h3-color)}
 p{margin-bottom:1.2em}
 ul,ol{margin:0 0 1.15em 1.3em}
 li{margin-bottom:.5em}
-.lead{font-size:1.125rem;line-height:1.75;color:var(--muted);max-width:96ch}
+.lead{font-size:1.25rem;line-height:1.75;color:var(--muted);max-width:96ch} /* ROUND 2026-11-16 (C): 1.125rem=18px -> 1.25rem=20px, keeps lead at body size */
 .container{max-width:var(--maxw);margin:0 auto;padding:0 28px}
 .section{padding:88px 0;position:relative}
 /* DESIGN FIX 2026-11-13: .section-cream is white now (cream wash removed);
@@ -202,7 +218,7 @@ li{margin-bottom:.5em}
 }
 .hero-content{position:relative;z-index:2;padding:104px 28px 112px;max-width:var(--maxw);margin:0 auto}
 .hero-content h1{color:#fff;max-width:42ch;margin-bottom:20px}
-.hero-intro{font-size:1.15rem;line-height:1.7;color:#E6EEF5;max-width:84ch;margin-bottom:30px}
+.hero-intro{font-size:1.25rem;line-height:1.7;color:#E6EEF5;max-width:84ch;margin-bottom:30px} /* ROUND 2026-11-16 (C): 1.15rem -> 1.25rem = 20px */
 .hero-ctas{display:flex;flex-wrap:wrap;gap:14px}
 .hero-ctas .btn{min-width:min(300px,100%)}
 .hero-short .hero-content{padding:72px 28px 80px}
@@ -211,7 +227,7 @@ li{margin-bottom:.5em}
 /* ---------- Service hero: wide H1 + summary left, compact form right ---------- */
 .hero-service .hero-content{padding:64px 28px 72px}
 .hero-service .hero-content h1{max-width:42ch}
-.hero-service-summary p{font-size:1.15rem;line-height:1.7;color:#E6EEF5;margin-bottom:28px}
+.hero-service-summary p{font-size:1.25rem;line-height:1.7;color:#E6EEF5;margin-bottom:28px} /* ROUND 2026-11-16 (C): 1.15rem -> 1.25rem = 20px */
 .hero-service-summary a{color:#9ED4F0;text-decoration:underline}
 .hero-service-summary a:hover{color:#fff}
 @media (min-width:1021px){
@@ -235,7 +251,7 @@ li{margin-bottom:.5em}
   list-style:none;margin:0;display:flex;flex-wrap:wrap;gap:10px 40px;
   padding:20px 0;
 }
-.trust-band li{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:600}
+.trust-band li{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:600} /* ROUND 2026-11-16 (C): 16px -> 18px */
 .trust-band .check{
   width:24px;height:24px;border-radius:50%;background:var(--accent);
   color:#fff;display:inline-flex;align-items:center;justify-content:center;
@@ -353,7 +369,7 @@ li{margin-bottom:.5em}
   display:flex;align-items:center;justify-content:space-between;gap:28px;
   padding-top:30px;padding-bottom:30px;
 }
-.call-strip p{margin-bottom:0;font-weight:600;font-size:1.2rem}
+.call-strip p{margin-bottom:0;font-weight:600;font-size:1.25rem} /* ROUND 2026-11-16 (C): 1.2rem -> 1.25rem = 20px */
 .call-strip .btn{flex-shrink:0;white-space:nowrap}
 .final-cta{padding:80px 0;background:var(--white)}
 .final-cta-card{
@@ -472,9 +488,11 @@ li{margin-bottom:.5em}
   .hero-service-form{margin-top:28px}
   /* Mobile call bar: mobile viewports only (<=1020px). */
   html.callbar-on .mobile-call-bar{display:flex}
+  /* MOBILE AUDIT 2026-11-16 (item F): backdrop only while menu open. */
+  html.menu-open .menu-backdrop{display:block}
 }
 @media (max-width:640px){
-  body{font-size:18px}
+  body{font-size:20px} /* ROUND 2026-11-16 (C): 18px -> 20px */
   .container{padding:0 20px}
   .section{padding:60px 0}
   .topbar-inner{padding:8px 20px;font-size:.76rem;justify-content:center}
@@ -600,7 +618,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{
 /* ---------- 5. FAQ: hover + open-state signal ---------- */
 .faq-list summary{border-radius:var(--radius-sm)}
 .faq-list summary:hover{background:var(--accent-faint)}
-.faq-list details[open] summary h3{color:var(--accent-deep)}
+.faq-list details[open] summary h3{color:var(--h3-color)}
 .faq-list details[open] .faq-toggle{background:var(--accent);color:#fff}
 
 /* ---------- 6. Tables: row hover for scanability (metrics untouched) ---------- */
@@ -647,6 +665,16 @@ main li a, main dd a{display:inline-block;min-height:24px;line-height:24px}
 .mobile-menu{overscroll-behavior:contain}
 .mobile-menu a:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 
+/* MOBILE AUDIT 2026-11-16 (item F, P1 — Delaware scroll-trap fix):
+   backdrop behind the open mobile menu. Fixed full-viewport sheet BELOW
+   the sticky header (z 100) and ABOVE page content, so a tap anywhere
+   outside the menu panel closes the menu instead of activating whatever
+   sits underneath. It is a sibling of <header> (not inside it: the
+   header's backdrop-filter would make a fixed child size to the header).
+   Shown only while the menu is open (html.menu-open, set by main.js) and
+   only at mobile widths, where .mobile-head exists. */
+.menu-backdrop{display:none;position:fixed;inset:0;z-index:90;background:rgba(7,21,39,.45)}
+
 /* ---------- Phase 3 responsive overrides (AFTER all base rules) ---------- */
 @media (min-width:1021px){
   /* 4-col process: 7 steps fall 4+3, no lone orphan card in row 3. */
@@ -669,7 +697,7 @@ main li a, main dd a{display:inline-block;min-height:24px;line-height:24px}
   .eyebrow::before{width:28px}
   /* Trust band: tighter wrap on phones. */
   .trust-band ul{gap:8px 20px;padding:16px 0}
-  .trust-band li{font-size:15px}
+  .trust-band li{font-size:17px} /* ROUND 2026-11-16 (C): 15px -> 17px */
   /* FAQ questions wrap less at phone widths. */
   .faq-list summary h3{font-size:1.22rem}
   .faq-list summary{padding:16px 4px}
@@ -709,7 +737,7 @@ main li a, main dd a{display:inline-block;min-height:24px;line-height:24px}
 @media (min-width:1021px){
   /* P3-3: call strip on one line at 1280 (size only; sentence untouched).
      Natural text width 1022px vs 1004px available at 19.2px — 18.4px fits. */
-  .call-strip p{font-size:1.15rem}
+  .call-strip p{font-size:1.25rem} /* ROUND 2026-11-16 (C): 1.15rem -> 1.25rem = 20px; may wrap to 2 lines at 1280, accepted */
   .call-strip .container{gap:24px}
   /* P3-5: quick-list label column. Longest live label needs 360px at the
      18px/700 dt font ("Street water main break in Cobb County"); 260px

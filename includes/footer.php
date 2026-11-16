@@ -57,14 +57,6 @@ $map_src = 'https://www.google.com/maps?q=' . rawurlencode($SITE['map_query']) .
       </ul>
     </div>
     <div class="footer-col">
-      <p class="footer-h">Resources</p>
-      <ul>
-        <?php foreach (nav_resources() as $r): ?>
-        <li><a href="<?= esc($r['slug']) ?>"><?= esc($r['nav']) ?></a></li>
-        <?php endforeach; ?>
-      </ul>
-    </div>
-    <div class="footer-col">
       <p class="footer-h">Get Help Now</p>
       <p><a href="<?= esc($SITE['phone_href']) ?>"><?= esc($SITE['phone']) ?></a><br>
       Acworth, GA 30101 &amp; 30102<br>
@@ -82,6 +74,6 @@ $map_src = 'https://www.google.com/maps?q=' . rawurlencode($SITE['map_query']) .
   <span aria-hidden="true">&#9742;</span><span><?= esc($SITE['phone']) ?></span>
 </a>
 <div class="mobile-call-spacer" aria-hidden="true"></div>
-<script src="/assets/js/main.js?v=4" defer></script>
+<script src="/assets/js/main.js?v=5" defer></script>
 </body>
 </html>

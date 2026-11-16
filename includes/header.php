@@ -47,7 +47,7 @@ global $SITE, $SERVICES, $AREAS;
      is unused anywhere on the site, so no italic file is installed. -->
 <link rel="preload" href="/assets/fonts/fraunces-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/assets/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/assets/css/styles.css?v=14">
+<link rel="stylesheet" href="/assets/css/styles.css?v=15">
 <?= $HEAD['ld'] ?? '' ?>
 <noscript><style>.reveal{opacity:1 !important;transform:none !important;}</style></noscript>
 </head>
@@ -85,6 +85,15 @@ global $SITE, $SERVICES, $AREAS;
           <a href="/locations">View all service areas</a>
         </div>
       </details>
+      <details>
+        <summary>Resources</summary>
+        <div class="nav-drop">
+          <p class="drop-group">Resource Guides</p>
+          <?php foreach (nav_resources_menu() as $r): ?>
+          <a href="<?= esc($r['slug']) ?>"><?= esc($r['nav']) ?></a>
+          <?php endforeach; ?>
+        </div>
+      </details>
       <a href="/about">About</a>
       <a href="/contact">Contact</a>
     </nav>
@@ -104,6 +113,10 @@ global $SITE, $SERVICES, $AREAS;
           <a href="<?= esc($a['slug']) ?>"><?= esc($a['city']) ?>, GA</a>
           <?php endforeach; ?>
           <a href="/locations">View all service areas</a>
+          <p class="drop-group">Resources</p>
+          <?php foreach (nav_resources_menu() as $r): ?>
+          <a href="<?= esc($r['slug']) ?>"><?= esc($r['nav']) ?></a>
+          <?php endforeach; ?>
           <a href="/about">About</a>
           <a href="/contact">Contact</a>
           <a class="btn btn-ocean" href="<?= esc($SITE['phone_href']) ?>"><?= esc($SITE['phone']) ?></a>
@@ -112,4 +125,10 @@ global $SITE, $SERVICES, $AREAS;
     </div>
   </div>
 </header>
+<!-- MOBILE AUDIT 2026-11-16 (item F): backdrop for the open mobile menu.
+     Sibling of <header>, not inside it (the header's backdrop-filter
+     would size a fixed child to the header, not the viewport). Shown only
+     while the menu is open (html.menu-open, main.js); a tap on it closes
+     the menu. No content, no link. -->
+<div class="menu-backdrop" aria-hidden="true"></div>
 <main>

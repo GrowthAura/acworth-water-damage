@@ -297,6 +297,23 @@ function nav_resources() {
     return $out;
 }
 
+// Header nav Resources menu (FOOTER-MENU ROUND 2026-11-16): the same 7
+// resource guides, in tab order, with SHORT menu labels (3-4 words each,
+// shortened from each guide's H1 — the full H1s are too long for a nav
+// dropdown). Targets are the verbatim resource slugs. There is NO
+// /resources hub route, so the menu lists the 7 guides directly.
+function nav_resources_menu() {
+    return [
+        ['slug' => '/resources/cobb-county-sewage-backup-who-pays', 'nav' => 'Sewage Backup: Who Pays'],
+        ['slug' => '/resources/cobb-county-water-leak-credit', 'nav' => 'Water Leak Credit'],
+        ['slug' => '/resources/lake-allatoona-high-water-basement', 'nav' => 'Lake Allatoona High Water'],
+        ['slug' => '/resources/musty-basement-water-damage-signs', 'nav' => 'Hidden Water Damage Signs'],
+        ['slug' => '/resources/acworth-frozen-pipe-prevention', 'nav' => 'Frozen Pipe Prevention'],
+        ['slug' => '/resources/water-damage-restoration-cost-acworth', 'nav' => 'Restoration Cost in Acworth'],
+        ['slug' => '/resources/water-damage-first-24-hours', 'nav' => 'First 24 Hours Checklist'],
+    ];
+}
+
 // A paragraph array: ['text' => ..., 'anchor' => ..., 'href' => ...]
 // or a plain string paragraph.
 function render_para($para, $currentSlug = null) {
