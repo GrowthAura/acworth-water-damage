@@ -70,30 +70,14 @@ global $SITE, $SERVICES, $AREAS;
         <summary>Services</summary>
         <div class="nav-drop">
           <p class="drop-group">Water Damage Services</p>
-          <?php foreach (nav_services() as $s): ?>
+          <?php foreach (nav_services_footer() as $s): ?>
           <a href="<?= esc($s['slug']) ?>"><?= esc($s['nav']) ?></a>
           <?php endforeach; ?>
         </div>
       </details>
-      <details>
-        <summary>Service Areas</summary>
-        <div class="nav-drop">
-          <p class="drop-group">Nearby Cities</p>
-          <?php foreach ($AREAS as $a): ?>
-          <a href="<?= esc($a['slug']) ?>"><?= esc($a['city']) ?>, GA</a>
-          <?php endforeach; ?>
-          <a href="/locations">View all service areas</a>
-        </div>
-      </details>
-      <details>
-        <summary>Resources</summary>
-        <div class="nav-drop">
-          <p class="drop-group">Resource Guides</p>
-          <?php foreach (nav_resources_menu() as $r): ?>
-          <a href="<?= esc($r['slug']) ?>"><?= esc($r['nav']) ?></a>
-          <?php endforeach; ?>
-        </div>
-      </details>
+      <!-- MENU 2026-11-17 (his order): Areas = direct link to /locations;
+           guides group removed from the menu. Footer + body links untouched. -->
+      <a href="/locations">Service Areas</a>
       <a href="/about">About</a>
       <a href="/contact">Contact</a>
     </nav>
@@ -105,18 +89,12 @@ global $SITE, $SERVICES, $AREAS;
         <div class="mobile-menu">
           <a href="/">Home</a>
           <p class="drop-group">Water Damage Services</p>
-          <?php foreach (nav_services() as $s): ?>
+          <?php foreach (nav_services_footer() as $s): ?>
           <a href="<?= esc($s['slug']) ?>"><?= esc($s['nav']) ?></a>
           <?php endforeach; ?>
-          <p class="drop-group">Service Areas</p>
-          <?php foreach ($AREAS as $a): ?>
-          <a href="<?= esc($a['slug']) ?>"><?= esc($a['city']) ?>, GA</a>
-          <?php endforeach; ?>
-          <a href="/locations">View all service areas</a>
-          <p class="drop-group">Resources</p>
-          <?php foreach (nav_resources_menu() as $r): ?>
-          <a href="<?= esc($r['slug']) ?>"><?= esc($r['nav']) ?></a>
-          <?php endforeach; ?>
+          <!-- MENU 2026-11-17 (his order): Areas = direct link to /locations;
+               guides group removed from the menu. Footer + body links untouched. -->
+          <a href="/locations">Service Areas</a>
           <a href="/about">About</a>
           <a href="/contact">Contact</a>
           <a class="btn btn-ocean" href="<?= esc($SITE['phone_href']) ?>"><?= esc($SITE['phone']) ?></a>
