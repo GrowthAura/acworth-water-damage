@@ -1062,3 +1062,44 @@ Started: 2026-11-11 ~17:43 PKT. Build dir: ~/workspace/acworth-water-damage/. Lo
 - Run-2 UI/UX note: Button 2 below 800px fold on 13/41 at 390×800 (P3-7).
 - Run-2 pack built (83 pp, 44,238,873 B) but upload failed 3×; no link. Morning q68 pack upload pending user's approval on its card.
 - Cron acworth-atoz-audit REMOVED after report delivery (stop condition met). Goal timeline entry logged.
+
+## SITEMAP 3-DATE CHANGE + BING INDEXNOW — PUSHED LIVE 2026-11-16 ~18:17 PKT (his order 16:57 PKT + token pasted 16:56 PKT, transient, never stored/quoted)
+- Why: sitemap showed ONE identical lastmod (2026-11-16) on all 41 URLs — mass-content signal; user wants safest zone. His corrections: 25 on one date too massive; homepage + 10 most important services on newest date.
+- Change (index.php sitemap branch only, 37 insertions / 2 deletions): 11 x 2026-11-16 (homepage + 10 most important services = 7 footer services + crawl-space, ceiling, storm-roof-leak) / 15 x 2026-11-15 (remaining 15 services) / 15 x 2026-11-14 (5 areas + /locations + 7 resources + /about + /contact). Dates are real push-history dates. No page HTML/content/image changed; export diff vs snapshot = sitemap.xml only.
+- Verification (coordinator + 2 independent verifiers, end-level zero-blunder bar): READY, 0 defects. Export PROBLEMS 0, 251 files; word-diff 0 (46,849/46,849); crawl 41/41; blunder hunt 32/32. Findings: qa/FINDINGS-sitemap-dates-2026-11-16.md.
+- IndexNow key: new key file at site root (33 B), added to index.php static list + export copy list + nightly run_indexnow.py sites list (Acworth first submission ever).
+- Push: main 65e9e75 -> 7df5660; cloudflare-pages c8ced89 -> ea734c1 (only sitemap.xml + key file). Action run 43873478633 success -> deployment 1cf15864 (production).
+- LIVE VERIFIED ON WWW (parent, fresh curls): sitemap 200, dates 11/15/15 = 41; 41/41 routes 200 + H1==1; homepage H2 18; key file 200 + content match; bogus 404 + noindex.
+- BING INDEXNOW: 41/41 URLs submitted to api.indexnow.org -> HTTP 202 Accepted.
+- Still open (unchanged): A-to-Z audit 40 defects (P1 9 photos etc.) — separate photo fix round, needs his call.
+
+## 10X TECHNICAL SEO AUDIT — COMPLETE 2026-11-16 ~19:21 PKT (his order 18:27 PKT; audit only, no fixes/push)
+- Verdict: NOT READY — 0 NEW P1 / 0 NEW P2 / 2 NEW P3 (total known defects now 42: P1 9 / P2 8 / P3 25). Findings: qa/FINDINGS-techseo-2026-11-16.md. Verifier agrees, zero disputes.
+- Technical surface CLEAN: crawl 41/41 200 + H1==1, canonicals/og 41/41, sitemap live 11/15/15, robots Allow:/ no Host, llms.txt 41, schema 0 parse errors, FAQ 191/191/191, links 582 (broken 0, self 0), word-diff 0, assets 202/202 200, overflow 0, CLS 0.0000, IndexNow key live 200.
+- NEW P3-1: no 1280w hero variant — 32/41 desktop heroes serve 1600x900 for a 1280px slot (srcset jumps 800->1600). NEW P3-2: mobile service heroes visually invisible — 25 service pages at 390px show only a centre ~16% slice under a dark overlay (photo adds nothing on mobile).
+- CARRIED: morning A-to-Z 40 ALL confirmed still open (P1 9 photos byte-identical; P2 8 incl. schema dates missing 41/41, apex curl 52, prose 122-130ch; P3 23). LCP not measurable in-lab (honest limit, no number invented).
+- Needs his call: 9 P1 photos + 2 new P3s + carried P2/P3 fix scope.
+
+## WWW ALIVE CHECK + TOKENS — 2026-11-16 ~20:37 PKT (his message: push for now, make sure www is not dead)
+- Fresh live checks: homepage 200, sitemap 11/15/15, emergency + mold-remediation 200, resources/first-24-hours 200, IndexNow key file 200. (One 404 in the check was the parent's own wrong test URL — missing /resources/ prefix; correct URL is 200.)
+- NO PUSH DONE: nothing to push — main 7df5660 + cloudflare-pages ea734c1 already live (deployment 1cf15864); the tech SEO audit changed no code (qa/ files only). Only uncommitted item is this PROGRESS.md log text.
+- Tokens received 20:36 PKT (Cloudflare + GitHub, transient, values never stored/quoted). Cloudflare token not used — no Cloudflare-side change ordered yet (apex redirect P2-2 is the pending use for it).
+- Apex still dead (000, P2-2 carried). Technical SEO fix round (P1 photos + 2 new P3s + schema dates + apex) awaits his word.
+
+## FORM ACTIVATION (Google Sheets webhook, San Bruno pattern) — PHASE 2 DONE LOCALLY 2026-11-16 ~21:15 PKT (NOT pushed)
+- Phase 1 (prepare, placeholder URL) + phase 2 (finalize): lead form (40 pages) + contact form (/contact, 7 fields) now POST to the live Apps Script webhook https://script.google.com/macros/s/AKfycbykeOdfYOxJuQy4fCEp-j4ZVOT0PNkMsF1jXNcvZ-7Nyt05McwE_evid4cwPI4yq0SX3g/exec (Sheet "Acworth Water Damage - Website Leads", tab "Leads", in the Naples Gmail account; script qa/acworth-lead-webhook.gs). Single source of truth: data/pages.php $SITE['leads_webhook'] (ONE line swapped in phase 2).
+- Verified locally: export PROBLEMS 0, 41/41 pages carry the form with the real action (character-exact), #form-status 41/41, JS ?v=6, return_url/page correct per page (compact form carries its own slug), word-diff 0/0, visible text 0 files changed vs pre-form snapshot. Privacy: waterdamgenaples/gmail.com 0 hits in the whole export — email lives ONLY in qa/acworth-lead-webhook.gs, never in site code/export.
+- Payload test vs FAKE local endpoint (zero POSTs to the real webhook): 5/5 behaviours (lead happy path, empty-submit validation, honeypot fake-success, contact happy path, dead-endpoint failure message); exactly 2 POSTs, all fields correct.
+- Findings: qa/FINDINGS-form-sheets-phase2-2026-11-16.md (+ phase 1 file). Independent verifier: qa/VERIFY-form-sheets-phase2-2026-11-16.md.
+- Commits (local only, NOT pushed): main [SHA] / cloudflare-pages [SHA] — parent pushes with the user's token. After push: live-test ONE real lead → confirm Sheet row + Gmail alert → delete the test row.
+
+## FINAL LIVE CHECK — 2026-11-16 ~21:12 PKT (his order "www dead to nahi, technical SEO A to Z, finally btao" + tokens re-pasted 21:11, same in-window values, transient)
+- Fresh live verification by parent (curl, all 41 sitemap locs fetched): 41/41 HTTP 200, H1==1 all 41, canonical == own URL all 41. Sitemap 11/15/15. robots 200 Allow:/ + sitemap, no Host. llms.txt 200 with 41 URLs. IndexNow key 200. Homepage H2 18. Bogus -> 404 + noindex. Slash -> 308 no-slash. Apex still dead (000, P2-2 carried). Live JS still v5 + no webhook (form wiring NOT live yet — phase 2 in progress).
+- NOTE: first check attempt used Python urllib and returned all-0 (sandbox blocks urllib); re-ran with curl — all green. The site was never dead; the 0s were the sandbox, not the site.
+- TECHNICAL SEO FINAL (fresh live check + 19:21 audit on the same unchanged live deployment 1cf15864): surface CLEAN — 0 new P1/P2, 2 new P3 (no 1280w hero variant 32/41; mobile service heroes invisible). Carried 40 still open (P1 9 photos etc.). Full audit: qa/FINDINGS-techseo-2026-11-16.md.
+- Tokens on hand for the form push (phase 2 commits first, then push + live test lead).
+
+## APEX FIXED LIVE — 2026-11-16 ~21:15 PKT (his order "apex wlala jo rola hey 10001 percent set kro jan" + Cloudflare token re-pasted 21:14, transient, never stored/quoted)
+- Root cause: the zone had NO apex DNS record at all (only CNAME www -> acworth-water-damage.pages.dev) — nothing answered for the bare domain (curl 52/000).
+- Fix (Cloudflare API, token verified via live DNS read): (1) CNAME @ -> acworth-water-damage.pages.dev, proxied, created (success). (2) New zone ruleset b6df6b2db685499985a25df423c99a71, phase http_request_dynamic_redirect: (http.host eq "acworthwaterdamagerestoration.us") -> 301 to concat("https://www.acworthwaterdamagerestoration.us", http.request.uri.path), preserve_query_string true.
+- LIVE VERIFIED (parent, fresh curls): apex home -> 301 https://www.acworthwaterdamagerestoration.us/; apex /mold-remediation-acworth-ga -> 301 www same path; apex ?utm_source=test -> 301 www with query preserved; apex http -> 301 https www; www still 200. Audit P2-2 (apex) now CLOSED.

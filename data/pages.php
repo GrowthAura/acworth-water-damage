@@ -27,6 +27,11 @@ $SITE = [
     'map_query'   => 'Acworth, GA 30101',
     // GitHub Pages project URL (live). Swap when a real domain lands.
     'url'         => 'https://www.acworthwaterdamagerestoration.us',
+    // Lead-form webhook (Google Sheets, San Bruno pattern). PHASE 1
+    // placeholder — the parent swaps this ONE value for the real Apps
+    // Script /exec URL in phase 2; both form templates read it here.
+    // No email address lives in the site code — only this URL.
+    'leads_webhook' => 'https://script.google.com/macros/s/AKfycbykeOdfYOxJuQy4fCEp-j4ZVOT0PNkMsF1jXNcvZ-7Nyt05McwE_evid4cwPI4yq0SX3g/exec',
 ];
 
 $HOME_META = [

@@ -8,13 +8,11 @@ require $ROOT . '/data/pages.php';
 require $ROOT . '/data/pages-full.php';
 require $ROOT . '/data/media.php';
 require $ROOT . '/includes/functions.php';
-require $ROOT . '/includes/lead-handler.php';
 
 $PAGES = build_pages();
 $SERVICES_BY_SLUG = [];
 foreach ($SERVICES as $s) $SERVICES_BY_SLUG[$s['slug']] = $s;
 
-$method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $rawPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
 $path = rawurldecode($rawPath);
 
@@ -108,20 +106,19 @@ if ($isStatic) {
     exit;
 }
 
-// 4. Lead form submission (homepage or any known page). No mail is sent;
-// the renderer shows an honest notice instead.
-$form = null;
-if ($method === 'POST' && ($path === '/' || isset($PAGES[$path]))) {
-    $form = ($path === '/contact') ? handle_contact_post($_POST) : handle_lead_post($_POST);
-}
+// 4. Lead/contact forms POST straight to the Google Sheets webhook
+// (Apps Script) from the browser — there is no PHP form handling here.
+// The live site is static (Cloudflare Pages), so a PHP POST endpoint
+// could never run live anyway; the old lead-handler.php is deleted.
+// (Section 4 intentionally has no code.)
 
 // 5. Routes.
 if ($path === '/') {
-    render_home($form);
+    render_home();
     exit;
 }
 if (isset($PAGES[$path])) {
-    render_page($path, $PAGES[$path], $form);
+    render_page($path, $PAGES[$path]);
     exit;
 }
 
@@ -175,7 +172,7 @@ function call_strip() {
         '</div></section>';
 }
 
-function final_cta_compact($formTarget = '#request-service', $withForm = false, $form = null, $btn2 = 'Request Emergency Help', $showH2 = true) {
+function final_cta_compact($formTarget = '#request-service', $withForm = false, $btn2 = 'Request Emergency Help', $showH2 = true, $slug = '/') {
     global $FINAL_CTA_H2, $FINAL_CTA_PARAS, $ROOT;
     $out = '<section class="final-cta"><div class="container"><div class="final-cta-card">';
     // DEEP FIX 2026-11-14 (P3-1/P3-2): $showH2 is false when the page's
@@ -189,10 +186,13 @@ function final_cta_compact($formTarget = '#request-service', $withForm = false, 
     $out .= '</div>';
     // AZ P2-5: pages with no hero form convert in place — the compact
     // final CTA carries the same compact lead form the service hero does.
-    // $form is the POST result (errors/notice), so a submit on one of
-    // these pages shows its notice in this form.
+    // $slug is this page's slug: the compact form's hidden "page" /
+    // "return_url" fields must carry THIS page's URL, not the homepage's
+    // (lead-form.php reads $currentSlug, which is out of scope in this
+    // function without it).
     if ($withForm) {
         $formCompact = true;
+        $currentSlug = $slug;
         ob_start();
         require $ROOT . '/includes/lead-form.php';
         $out .= '<div class="form-wrap">' . ob_get_clean() . '</div>';
@@ -202,7 +202,7 @@ function final_cta_compact($formTarget = '#request-service', $withForm = false, 
     return $out;
 }
 
-function render_home($form = null) {
+function render_home() {
     global $ROOT, $SITE, $HOME_META, $TRUST, $QUICK, $CARDS, $SERVICES_BY_SLUG,
         $SERVICES_H2, $SERVICES_INTRO, $SERVICES_CLOSE, $CAUSES_H2, $CAUSES_INTRO,
         $CAUSES, $SIGNS_H2, $SIGNS_INTRO, $SIGNS, $SIGNS_CLOSE, $PROCESS_H2,
@@ -383,7 +383,7 @@ function render_home($form = null) {
     require $ROOT . '/includes/footer.php';
 }
 
-function render_page($slug, $page, $form = null) {
+function render_page($slug, $page) {
     global $ROOT, $SITE, $HOME_META, $PAGES, $AREAS, $FINAL_CTA_H2;
     $meta = page_meta($slug, $PAGES);
     $type = $page['type'];
@@ -533,7 +533,7 @@ function render_page($slug, $page, $form = null) {
 </div></section>
 <?= call_strip() ?>
 <?php if (!$isContact): ?>
-<?= final_cta_compact($formTarget, $withForm, $form, $btn2, $showCtaH2) ?>
+<?= final_cta_compact($formTarget, $withForm, $btn2, $showCtaH2, $slug) ?>
 <?php endif; ?>
 <?php
     require $ROOT . '/includes/footer.php';
