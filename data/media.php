@@ -272,9 +272,45 @@ function img_srcset($img, $widths) {
     return implode(', ', $parts);
 }
 
-// WebP srcset for heroes (SPEED INDEX FIX 2026-11-17): mirrors img_srcset()
-// but serves .webp variants, topped by the 1280w WebP (from the original —
-// the hero slot renders at most 1280px wide, so no 1600w WebP is needed).
+// Variant-only srcset (no original appended) — for <picture> sources,
+// where the largest entry must be an exact variant width, not the 1600w
+// original. A variant is skipped silently when its file is absent.
+function img_srcset_variants($img, $widths) {
+    if (!$img || empty($img['file'])) return '';
+    $stem = preg_replace('/\.jpg$/i', '', $img['file']);
+    $parts = [];
+    foreach ((array) $widths as $tw) {
+        $vfile = $stem . '-' . (int) $tw . 'w.jpg';
+        if (!is_file(__DIR__ . '/../assets/img/variants/' . $vfile)) continue;
+        $parts[] = '/assets/img/variants/' . $vfile . ' ' . (int) $tw . 'w';
+    }
+    return implode(', ', $parts);
+}
+
+// Hero <picture> srcsets — SINGLE SOURCE OF TRUTH for hero_img_tag() +
+// hero_preload_tag(). The preload MUST serve the same srcset the picture
+// uses, or the browser downloads twice. Returns null when the progressive
+// variants are not all on disk (callers fall back to plain JPG img +
+// JPG preload, the pre-WebP behaviour).
+// PROGRESSIVE-JPEG FIX 2026-11-17 (diagnosis #2): the hero <picture>
+// serves progressive JPEG — mobile via a media-qualified source
+// (360/560w; with only 360/560 offered, the browser picks 560w on mobile
+// instead of the 800w it picked from the old [360,560,800] srcset at
+// DPR 1.75 x 412 CSS px = 721), desktop via its own source (800/1280w).
+// WebP is all-or-nothing (zero hero pixels until fully decoded — the
+// 6/8 blank filmstrip); a progressive JPEG paints its first scan early.
+function hero_picture_srcsets($img) {
+    if (!$img || empty($img['file'])) return null;
+    $mob = img_srcset_variants($img, [360, 560]);
+    $desk = img_srcset_variants($img, [800, 1280]);
+    if ($mob === '' || $desk === '') return null;
+    return ['mobile' => $mob, 'desktop' => $desk];
+}
+
+// WebP srcset — RETAINED 2026-11-17 (progressive-JPEG round): no longer
+// used by heroes (hero_img_tag()/hero_preload_tag() now serve progressive
+// JPEG only). Kept so the WebP variants stay addressable; the .webp files
+// remain on disk and in git and are never fetched by the hero.
 function img_srcset_webp($img, $widths) {
     if (!$img || empty($img['file'])) return '';
     $stem = preg_replace('/\.jpg$/i', '', $img['file']);
@@ -298,8 +334,11 @@ function img_srcset_webp($img, $widths) {
 // pipeline as the card variants); the hero tag just never offered them.
 // DEEP FIX 2026-11-14 (P3-8): 'pos' (per-image object-position) is
 // emitted as an inline style when the slot defines one.
-// SPEED INDEX FIX 2026-11-17: wrapped in <picture> with a WebP <source>
-// (same widths + 1280w top) + the JPG <img> as fallback. Cards stay JPG.
+// PROGRESSIVE-JPEG FIX 2026-11-17 (diagnosis #2): wrapped in <picture>
+// with TWO progressive-JPEG <source>s (mobile 360/560w, desktop 800/1280w)
+// + the JPG <img> as fallback. The old WebP <source> is gone: WebP is
+// all-or-nothing, so the hero showed zero pixels until fully decoded.
+// Cards stay JPG.
 function hero_img_tag($img, $extra = '') {
     if (!$img) return '';
     $style = !empty($img['pos']) ? ' style="object-position: ' . esc($img['pos']) . '"' : '';
@@ -308,26 +347,33 @@ function hero_img_tag($img, $extra = '') {
         ' srcset="' . img_srcset($img, [360, 560, 800]) . '"' .
         ' sizes="(max-width: 700px) 100vw, 1280px"' . $style .
         ($extra !== '' ? ' ' . $extra : '') . '>';
-    $webp = img_srcset_webp($img, [360, 560, 800]);
-    if ($webp === '') return $imgTag; // no WebP on disk: plain JPG img
-    return '<picture><source type="image/webp" srcset="' . $webp .
-        '" sizes="(max-width: 700px) 100vw, 1280px">' . $imgTag . '</picture>';
+    $sets = hero_picture_srcsets($img);
+    if ($sets === null) return $imgTag; // no progressive variants: plain JPG img
+    return '<picture><source media="(max-width: 700px)" srcset="' . $sets['mobile'] .
+        '" sizes="100vw"><source srcset="' . $sets['desktop'] .
+        '" sizes="1280px">' . $imgTag . '</picture>';
 }
 
 // SPEED INDEX / LCP FIX 2026-11-17 (his order; PSI mobile Speed Index 4.0s,
 // the hero <img> is the LCP element and the browser only discovers it after
 // parsing the body): preload the page's hero image so the browser discovers
-// it in the <head>. imagesrcset / imagesizes MUST match the <picture> WebP
-// <source> exactly (type="image/webp"), or the browser downloads the image
-// twice. When no WebP exists for a hero it falls back to the JPG srcset
-// (the pre-WebP behaviour). Returns '' when the page has no hero
-// (honestly empty by design).
+// it in the <head>. The preload MUST serve the same progressive-JPEG srcset
+// the <picture> source will use — hero_picture_srcsets() is the single
+// source of truth for both, so they cannot drift. TWO media-matched links:
+// exactly ONE fetches per viewport (media on <link> gates the fetch), so
+// there is still no double download. When no progressive variants exist
+// for a hero it falls back to the single JPG srcset (the pre-WebP
+// behaviour). Returns '' when the page has no hero (honestly empty by
+// design). PROGRESSIVE-JPEG FIX 2026-11-17 (diagnosis #2): the old single
+// WebP preload is gone with the WebP <source>.
 function hero_preload_tag($img) {
     if (!$img) return '';
-    $ss = img_srcset_webp($img, [360, 560, 800]);
-    if ($ss !== '') {
-        return '<link rel="preload" as="image" type="image/webp" imagesrcset="' . esc($ss) .
-            '" imagesizes="(max-width: 700px) 100vw, 1280px" fetchpriority="high">';
+    $sets = hero_picture_srcsets($img);
+    if ($sets !== null) {
+        return '<link rel="preload" as="image" media="(max-width: 700px)" imagesrcset="' . esc($sets['mobile']) .
+            '" imagesizes="100vw" fetchpriority="high">' .
+            '<link rel="preload" as="image" media="(min-width: 701px)" imagesrcset="' . esc($sets['desktop']) .
+            '" imagesizes="1280px" fetchpriority="high">';
     }
     $ss = img_srcset($img, [360, 560, 800]);
     if ($ss === '') return '';
